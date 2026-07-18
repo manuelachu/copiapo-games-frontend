@@ -26,18 +26,24 @@ export default function CreatePost() {
           precio: parseInt(precio), 
           imagen, 
           consola, 
-          stock: parseInt(stock) // 🚀 Enviamos la cantidad a la base de datos
+          stock: parseInt(stock) 
         })
       });
 
+      // 🛑 AQUÍ MODIFICAMOS PARA VER EL ERROR REAL:
       if (response.ok) {
         alert('¡Videojuego publicado exitosamente!');
         navigate('/');
       } else {
-        alert('Error al publicar el videojuego. Asegúrate de haber iniciado sesión.');
+        // Leemos la respuesta del servidor para ver qué falló exactamente
+        const errorData = await response.json().catch(() => ({}));
+        const mensajeError = errorData.message || errorData.error || 'Rechazado por el servidor';
+        
+        alert(`Error al publicar el videojuego: ${mensajeError}`);
       }
     } catch (error) {
       console.error(error);
+      alert('Hubo un problema de red al conectar con el servidor.');
     }
   };
 
