@@ -13,13 +13,16 @@ export default function CreatePost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // 🎯 Obtenemos el token guardado explícitamente desde el login
       const token = localStorage.getItem('token'); 
+      const userRol = localStorage.getItem('rol'); // 🔍 Leemos el rol del almacenamiento
 
       if (!token) {
-        alert('No se detectó el token en el navegador. Por favor, cierra sesión e inicia sesión de nuevo para registrarlo.');
+        alert('No se detectó el token en el navegador. Por favor, cierra sesión e inicia sesión de nuevo.');
         return;
       }
+
+      // 🎯 Determinamos la etiqueta del creador basándonos en su rol
+      const cargado_por = userRol === 'admin' ? 'usuario administrador' : 'usuario sean usuarios';
 
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {
         method: 'POST',
@@ -33,7 +36,8 @@ export default function CreatePost() {
           precio: parseInt(precio), 
           imagen, 
           consola, 
-          stock: parseInt(stock) 
+          stock: parseInt(stock),
+          cargado_por // 🚀 Enviamos la etiqueta al backend para guardarla en la tabla videojuegos
         })
       });
 
