@@ -1,5 +1,4 @@
-import { useState, useContext } from 'react'; // 👈 Importamos useContext
-import { GameContext } from '../context/GameContext'; // 👈 Importamos tu contexto
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function CreatePost() {
@@ -9,20 +8,16 @@ export default function CreatePost() {
   const [imagen, setImagen] = useState('');
   const [consola, setConsola] = useState('');
   const [stock, setStock] = useState(''); 
-  
-  // 🔍 Extraemos los datos del usuario logueado desde el contexto global
-  const { usuario } = useContext(GameContext); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // 🎯 Obtenemos el token directamente desde donde lo guardó tu contexto
-      // Nota: Si en tu contexto el objeto se llama diferente, ajustamos la propiedad. Normalmete es usuario?.token o token.
-      const token = usuario?.token; 
+      // 🎯 Obtenemos el token guardado explícitamente desde el login
+      const token = localStorage.getItem('token'); 
 
       if (!token) {
-        alert('No se detectó una sesión activa o el token no está disponible. Por favor, vuelve a iniciar sesión.');
+        alert('No se detectó el token en el navegador. Por favor, cierra sesión e inicia sesión de nuevo para registrarlo.');
         return;
       }
 

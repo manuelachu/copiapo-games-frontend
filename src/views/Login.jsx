@@ -11,7 +11,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-     const response = await fetch('https://copiapo-games-backend.onrender.com/api/auth/login', {
+      const response = await fetch('https://copiapo-games-backend.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -20,7 +20,10 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // Guardamos los datos reales del usuario y el token JWT en el contexto
+        // 🚀 GUARDAMOS EL TOKEN EN EL LOCALSTORAGE
+        localStorage.setItem('token', data.token);
+
+        // Guardamos los datos reales del usuario y el token JWT en el contexto global
         login({ email: data.user.email, token: data.token, rol: data.user.rol });
         alert("¡Ingreso exitoso!");
         navigate('/');
