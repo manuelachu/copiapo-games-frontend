@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react'; // 👈 Importamos useContext
+import { GameContext } from '../context/GameContext'; // 👈 Importamos tu contexto
 import { useNavigate } from 'react-router-dom';
 
 export default function CreatePost() {
@@ -7,13 +8,24 @@ export default function CreatePost() {
   const [precio, setPrecio] = useState('');
   const [imagen, setImagen] = useState('');
   const [consola, setConsola] = useState('');
-  const [stock, setStock] = useState(''); // 🚀 Estado para las unidades
+  const [stock, setStock] = useState(''); 
+  
+  // 🔍 Extraemos los datos del usuario logueado desde el contexto global
+  const { usuario } = useContext(GameContext); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token'); 
+      // 🎯 Obtenemos el token directamente desde donde lo guardó tu contexto
+      // Nota: Si en tu contexto el objeto se llama diferente, ajustamos la propiedad. Normalmete es usuario?.token o token.
+      const token = usuario?.token; 
+
+      if (!token) {
+        alert('No se detectó una sesión activa o el token no está disponible. Por favor, vuelve a iniciar sesión.');
+        return;
+      }
+
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {
         method: 'POST',
         headers: { 
@@ -30,15 +42,12 @@ export default function CreatePost() {
         })
       });
 
-      // 🛑 AQUÍ MODIFICAMOS PARA VER EL ERROR REAL:
       if (response.ok) {
         alert('¡Videojuego publicado exitosamente!');
         navigate('/');
       } else {
-        // Leemos la respuesta del servidor para ver qué falló exactamente
         const errorData = await response.json().catch(() => ({}));
         const mensajeError = errorData.message || errorData.error || 'Rechazado por el servidor';
-        
         alert(`Error al publicar el videojuego: ${mensajeError}`);
       }
     } catch (error) {
@@ -68,14 +77,12 @@ export default function CreatePost() {
               <label className="block text-sm font-semibold mb-1 text-slate-300">Precio ($)</label>
               <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={precio} onChange={(e) => setPrecio(e.target.value)} required />
             </div>
-            {/* 🚀 INPUT DE STOCK */}
             <div>
               <label className="block text-sm font-semibold mb-1 text-slate-300">Unidades (Stock)</label>
               <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: 20" value={stock} onChange={(e) => setStock(e.target.value)} required min="1" />
             </div>
           </div>
 
-          {/* 🛠️ CONSOLA CAMBIADA A SELECT DESPLEGABLE */}
           <div>
             <label className="block text-sm font-semibold mb-1 text-slate-300">Consola / Plataforma</label>
             <select 
