@@ -15,6 +15,7 @@ import Register from './views/Register';
 import Profile from './views/Profile';
 import CreatePost from './views/CreatePost';
 import GameDetail from './views/GameDetail';
+import Carrito from './views/Carrito'; // 🚀 1. Importación de la vista del Carrito
 
 
 const PrivateRoute = ({ children }) => {
@@ -28,19 +29,18 @@ function AppRoutes() {
       
       <Navbar />
       
-      
       <div className="flex flex-col min-h-screen bg-slate-950 text-white">
         
-       
         <main className="flex-grow">
           <Routes>
-          
+            {/* Rutas Públicas */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/game/:id" element={<GameDetail />} />
+            <Route path="/carrito" element={<Carrito />} /> {/* 🚀 2. Nueva ruta añadida */}
 
-            
+            {/* Rutas Privadas */}
             <Route path="/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="/publicar" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
           </Routes>
@@ -55,7 +55,6 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    
     <GameProvider>
       <AppRoutes />
     </GameProvider>
