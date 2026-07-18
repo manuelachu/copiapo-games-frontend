@@ -34,7 +34,7 @@ export default function CreatePost() {
         alert('¡Videojuego publicado exitosamente!');
         navigate('/');
       } else {
-        alert('Error al publicar el videojuego');
+        alert('Error al publicar el videojuego. Asegúrate de haber iniciado sesión.');
       }
     } catch (error) {
       console.error(error);
@@ -62,16 +62,27 @@ export default function CreatePost() {
               <label className="block text-sm font-semibold mb-1 text-slate-300">Precio ($)</label>
               <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={precio} onChange={(e) => setPrecio(e.target.value)} required />
             </div>
-            {/* 🚀 NUEVO INPUT DE STOCK */}
+            {/* 🚀 INPUT DE STOCK */}
             <div>
               <label className="block text-sm font-semibold mb-1 text-slate-300">Unidades (Stock)</label>
               <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: 20" value={stock} onChange={(e) => setStock(e.target.value)} required min="1" />
             </div>
           </div>
 
+          {/* 🛠️ CONSOLA CAMBIADA A SELECT DESPLEGABLE */}
           <div>
             <label className="block text-sm font-semibold mb-1 text-slate-300">Consola / Plataforma</label>
-            <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: playstation, xbox, nintendo" value={consola} onChange={(e) => setConsola(e.target.value)} required />
+            <select 
+              className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none cursor-pointer"
+              value={consola} 
+              onChange={(e) => setConsola(e.target.value)} 
+              required
+            >
+              <option value="" disabled>-- Selecciona una plataforma --</option>
+              <option value="Playstation">Playstation</option>
+              <option value="Xbox">Xbox</option>
+              <option value="Nintendo">Nintendo</option>
+            </select>
           </div>
 
           <div>
