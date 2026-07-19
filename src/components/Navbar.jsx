@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { GameContext } from '../context/GameContext';
 
 export default function Navbar() {
-  // 🛒 Traemos 'totalItems' desde el contexto para reflejar las cantidades sumadas
+  
   const { user, logout, totalItems } = useContext(GameContext);
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ export default function Navbar() {
             <Link to="/publicar" className="hover:text-blue-400 transition-colors">Vender Juego</Link>
             <Link to="/perfil" className="hover:text-blue-400 transition-colors">Mi Perfil ({user.email})</Link>
             
-            {/* 🚀 Cambiado a Link para poder ir al carrito al pinchar y usa totalItems */}
+           
             <Link 
               to="/carrito" 
               className="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-full text-sm text-emerald-400 font-bold transition-colors flex items-center gap-1"

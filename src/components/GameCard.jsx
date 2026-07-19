@@ -11,8 +11,7 @@ export default function GameCard({ game }) {
   const precio = Number(game.price || game.precio || 0);
   const stockReal = game.stock ?? 0;
   
-  // 🔍 Capturamos la etiqueta que viene de la base de datos
-  const creador = game.cargado_por || "usuario sean usuarios";
+ const creador = game.cargado_por || "usuario";
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-lg hover:border-blue-500 transition-all flex flex-col h-full">
@@ -20,7 +19,7 @@ export default function GameCard({ game }) {
       
       <div className="p-4 flex flex-col flex-grow justify-between gap-3">
         <div>
-          {/* 🏷️ NUEVA ETIQUETA: Identificador de Administrador o Usuario Común */}
+          
           <div className="mb-2.5 flex">
             <span className={`px-2 py-0.5 text-[9px] rounded font-bold uppercase tracking-wider border ${
               creador === 'usuario administrador'

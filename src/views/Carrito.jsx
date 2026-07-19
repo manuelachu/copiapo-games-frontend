@@ -19,7 +19,7 @@ export default function Carrito() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Lista de productos */}
+            
             <div className="lg:col-span-2 space-y-4">
               {cart.map((item) => {
                 const titulo = item.title || item.titulo || "Videojuego";
@@ -37,21 +37,21 @@ export default function Carrito() {
                     </div>
 
                     <div className="flex items-center justify-between w-full sm:w-auto gap-6">
-                      {/* Controles de Cantidad */}
+                     
                       <div className="flex items-center bg-slate-950 border border-slate-800 rounded">
                         <button onClick={() => removeFromCart(item.id)} className="px-3 py-1 text-red-400 hover:bg-slate-900 font-bold">-</button>
                         <span className="px-4 font-bold text-sm">{item.quantity}</span>
                         <button onClick={() => addToCart(item)} className="px-3 py-1 text-emerald-400 hover:bg-slate-900 font-bold">+</button>
                       </div>
 
-                      {/* Subtotal */}
+                      
                       <div className="text-right min-w-[80px]">
                         <p className="text-emerald-400 font-semibold text-sm">
                           ${(precio * item.quantity).toLocaleString('es-CL')}
                         </p>
                       </div>
 
-                      {/* Eliminar fila */}
+                      
                       <button onClick={() => deleteFromCart(item.id)} className="text-slate-500 hover:text-red-500 text-sm transition-colors">
                         🗑️
                       </button>
@@ -61,7 +61,7 @@ export default function Carrito() {
               })}
             </div>
 
-            {/* Resumen Comercial */}
+           
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 h-fit sticky top-6">
               <h3 className="text-xl font-bold border-b border-slate-800 pb-3 text-slate-200">Resumen del Pedido</h3>
               <div className="flex justify-between items-center mt-4">

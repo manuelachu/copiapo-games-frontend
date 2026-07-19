@@ -14,14 +14,14 @@ export default function CreatePost() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token'); 
-      const userRol = localStorage.getItem('rol'); // 🔍 Leemos el rol del almacenamiento
+      const userRol = localStorage.getItem('rol'); 
 
       if (!token) {
         alert('No se detectó el token en el navegador. Por favor, cierra sesión e inicia sesión de nuevo.');
         return;
       }
 
-      // 🎯 Determinamos la etiqueta del creador basándonos en su rol
+      
       const cargado_por = userRol === 'admin' ? 'usuario administrador' : 'usuario sean usuarios';
 
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {

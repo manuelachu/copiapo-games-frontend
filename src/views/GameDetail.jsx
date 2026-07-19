@@ -18,7 +18,7 @@ export default function GameDetail() {
   const categoria = game.category || game.consola || "General";
   const descripcion = game.description || game.descripcion || "Disfruta de esta entrega oficial disponible en Copiapó Games Store. El juego cuenta con garantía física y digital, listo para despacho inmediato.";
   const precio = Number(game.price || game.precio || 0);
-  const stockReal = game.stock ?? 0; // 🚀 Capturamos el stock real del juego
+  const stockReal = game.stock ?? 0; 
 
   const handlePurchase = () => {
     if (!user) {
@@ -30,11 +30,11 @@ export default function GameDetail() {
         price: precio,
         image: imagen,
         category: categoria,
-        stock: stockReal // 🚀 CRUCIAL: Pasamos el stock al carrito para que valide bien
+        stock: stockReal 
       };
       
-      // Dejamos que el contexto maneje los avisos internos.
-      // Si hay stock, se agregará silenciosamente o puedes meter un alert condicional dentro del contexto después.
+      
+       
       addToCart(juegoParaCarrito);
     }
   };
@@ -45,7 +45,7 @@ export default function GameDetail() {
       <div>
         <div className="flex justify-between items-center gap-4">
           <span className="text-xs font-bold uppercase text-blue-400 bg-blue-950 px-3 py-1 rounded-full">{categoria}</span>
-          {/* Indicador visual de unidades */}
+          
           <span className={`text-xs font-bold px-3 py-1 rounded-full ${stockReal > 0 ? 'text-emerald-400 bg-emerald-950' : 'text-red-400 bg-red-950'}`}>
             Stock: {stockReal} u.
           </span>
@@ -57,7 +57,7 @@ export default function GameDetail() {
           {descripcion}
         </p>
 
-        {/* Botón inteligente que se bloquea si el stock es 0 */}
+        
         <button 
           onClick={handlePurchase}
           disabled={user && stockReal <= 0}

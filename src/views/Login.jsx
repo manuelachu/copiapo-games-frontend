@@ -20,11 +20,11 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        // 🚀 GUARDAMOS EL TOKEN Y EL ROL EN EL LOCALSTORAGE
+        
         localStorage.setItem('token', data.token);
-        localStorage.setItem('rol', data.user.rol || 'usuario'); // Por defecto 'usuario' si viene vacío
+        localStorage.setItem('rol', data.user.rol || 'usuario'); 
 
-        // Guardamos los datos reales del usuario y el token JWT en el contexto global
+       
         login({ email: data.user.email, token: data.token, rol: data.user.rol });
         alert("¡Ingreso exitoso!");
         navigate('/');

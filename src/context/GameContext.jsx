@@ -28,10 +28,10 @@ export const GameProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    setCart([]); // Limpia el carrito al cerrar sesión
+    setCart([]); 
   };
 
-  // 🛒 Lógica avanzada para agregar al carrito respetando el stock
+  
   const addToCart = (game) => {
     setCart((prevCart) => {
       const existingGame = prevCart.find((item) => item.id === game.id);
@@ -55,7 +55,7 @@ export const GameProvider = ({ children }) => {
     });
   };
 
-  // ➖ Restar cantidad o eliminar si llega a 0
+ 
   const removeFromCart = (gameId) => {
     setCart((prevCart) =>
       prevCart
@@ -64,14 +64,14 @@ export const GameProvider = ({ children }) => {
     );
   };
 
-  // 🗑️ Eliminar un juego completo del carrito
+  
   const deleteFromCart = (gameId) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== gameId));
   };
 
   const clearCart = () => setCart([]);
 
-  // 💰 Cálculos automáticos para la interfaz
+ 
   const totalAmount = cart.reduce((acc, item) => acc + Number(item.price || item.precio || 0) * item.quantity, 0);
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
