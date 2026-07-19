@@ -6,6 +6,9 @@ export const GameProvider = ({ children }) => {
   const [games, setGames] = useState([]);
   const [user, setUser] = useState(null); 
   const [cart, setCart] = useState([]); 
+  
+  // 🟢 Agregamos el estado del filtro global
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     const cargarJuegos = async () => {
@@ -31,7 +34,6 @@ export const GameProvider = ({ children }) => {
     setCart([]); 
   };
 
-  
   const addToCart = (game) => {
     setCart((prevCart) => {
       const existingGame = prevCart.find((item) => item.id === game.id);
@@ -55,7 +57,6 @@ export const GameProvider = ({ children }) => {
     });
   };
 
- 
   const removeFromCart = (gameId) => {
     setCart((prevCart) =>
       prevCart
@@ -64,14 +65,12 @@ export const GameProvider = ({ children }) => {
     );
   };
 
-  
   const deleteFromCart = (gameId) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== gameId));
   };
 
   const clearCart = () => setCart([]);
 
- 
   const totalAmount = cart.reduce((acc, item) => acc + Number(item.price || item.precio || 0) * item.quantity, 0);
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -79,7 +78,9 @@ export const GameProvider = ({ children }) => {
     <GameContext.Provider value={{ 
       games, user, cart, login: loginUser, logout, 
       addToCart, removeFromCart, deleteFromCart, clearCart,
-      totalAmount, totalItems, setGames 
+      totalAmount, totalItems, setGames,
+      filter,     // 🟢 Exponemos el estado del filtro
+      setFilter   // 🟢 Exponemos la función modificadora
     }}>
       {children}
     </GameContext.Provider>

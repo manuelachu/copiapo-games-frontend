@@ -8,12 +8,14 @@ export default function Home() {
   const [visibleGames, setVisibleGames] = useState([]);
   const [animate, setAnimate] = useState(false);
 
-  // Filtrar los videojuegos según la selección global
-  const filteredGames = filter === 'all' 
+  // Filtrar los videojuegos asegurando que 'filter' exista con un respaldo seguro
+  const currentFilter = filter || 'all';
+
+  const filteredGames = currentFilter === 'all' 
     ? games 
     : games.filter(g => {
         const categoriaJuego = (g.category || g.consola || "").toLowerCase();
-        return categoriaJuego === filter.toLowerCase();
+        return categoriaJuego === currentFilter.toLowerCase();
       });
 
   // Manejar el efecto de animación al cambiar de filtro (desde arriba o desde el Footer)
@@ -47,7 +49,7 @@ export default function Home() {
               key={cat}
               onClick={() => setFilter(cat)}
               className={`px-4 py-1.5 rounded text-sm font-medium capitalize transition-all duration-200 ${
-                filter === cat 
+                currentFilter === cat 
                   ? 'bg-blue-600 text-white shadow-md scale-105' 
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
