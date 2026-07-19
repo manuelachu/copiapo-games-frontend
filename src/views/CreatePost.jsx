@@ -37,7 +37,7 @@ export default function CreatePost() {
           imagen, 
           consola, 
           stock: parseInt(stock),
-          cargado_por // 🚀 Enviamos la etiqueta al backend para guardarla en la tabla videojuegos
+          cargado_por 
         })
       });
 
