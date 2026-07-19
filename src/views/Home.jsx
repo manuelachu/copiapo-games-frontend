@@ -3,12 +3,12 @@ import { GameContext } from '../context/GameContext';
 import GameCard from '../components/GameCard';
 
 export default function Home() {
-  const { games } = useContext(GameContext);
-  const [filter, setFilter] = useState('all');
+  // Extraemos filter y setFilter directamente del contexto global
+  const { games, filter, setFilter } = useContext(GameContext);
   const [visibleGames, setVisibleGames] = useState([]);
   const [animate, setAnimate] = useState(false);
 
-  // Filtrar los videojuegos según la selección
+  // Filtrar los videojuegos según la selección global
   const filteredGames = filter === 'all' 
     ? games 
     : games.filter(g => {
@@ -16,7 +16,7 @@ export default function Home() {
         return categoriaJuego === filter.toLowerCase();
       });
 
-  // Manejar el efecto de animación al cambiar de filtro
+  // Manejar el efecto de animación al cambiar de filtro (desde arriba o desde el Footer)
   useEffect(() => {
     setAnimate(false);
     const timer = setTimeout(() => {
