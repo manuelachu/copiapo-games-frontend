@@ -1,11 +1,14 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { GameContext } from '../context/GameContext';
 
 export default function GameDetail() {
   const { id } = useParams();
   const { games, addToCart, user } = useContext(GameContext);
   const navigate = useNavigate();
+
+  // Estado local para controlar el mensaje de éxito del carrito
+  const [addedToCart, setAddedToCart] = useState(false);
 
   const game = games.find(g => String(g.id) === String(id));
 
@@ -20,7 +23,7 @@ export default function GameDetail() {
   const precio = Number(game.price || game.precio || 0);
   const stockReal = game.stock ?? 0; 
 
-  // Determinar quién subió el juego (ajusta la propiedad según cómo venga de tu BD: role, user_role, etc.)
+  // Determinar quién subió el juego
   const uploaderRole = game.role || game.user_role || game.created_by || 'admin';
   const isCustomUser = uploaderRole.toLowerCase() === 'user' || uploaderRole.toLowerCase() === 'usuario';
 
@@ -38,13 +41,19 @@ export default function GameDetail() {
       };
       
       addToCart(juegoParaCarrito);
+
+      // Mostrar mensaje de éxito temporal
+      setAddedToCart(true);
+      setTimeout(() => {
+        setAddedToCart(false);
+      }, 2000); // Vuelve a su estado normal después de 2 segundos
     }
   };
 
   return (
     <div className="p-8 max-w-4xl mx-auto min-h-[70vh] text-white flex flex-col justify-center">
       
-      {/* 🟢 Botón de Volver Atrás */}
+      {/* Botón de Volver Atrás */}
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors duration-200 group font-medium text-sm w-fit"
@@ -76,7 +85,7 @@ export default function GameDetail() {
               Stock: {stockReal} u.
             </span>
 
-            {/* 🟢 Badge de Administrador / Usuario */}
+            {/* Badge de Administrador / Usuario */}
             <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 ${
               isCustomUser
                 ? 'text-amber-400 bg-amber-950'
@@ -95,20 +104,31 @@ export default function GameDetail() {
           
           <button 
             onClick={handlePurchase}
-            disabled={user && stockReal <= 0}
-            className={`w-full md:w-auto font-bold px-8 py-3 rounded-lg shadow-lg transition-colors ${
+            disabled={(user && stockReal <= 0) || addedToCart}
+            className={`w-full md:w-auto font-bold px-8 py-3 rounded-lg shadow-lg transition-all duration-300 transform active:scale-95 flex items-center justify-center gap-2 ${
               !user 
                 ? 'bg-blue-600 hover:bg-blue-500 text-white' 
-                : stockReal > 0 
-                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white' 
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                : addedToCart
+                  ? 'bg-teal-600 text-white border border-teal-500 scale-102 shadow-teal-900/40' 
+                  : stockReal > 0 
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white' 
+                    : 'bg-slate-800 text-slate-500 cursor-not-allowed'
             }`}
           >
+            {/* Ícono de check animado si ya se guardó */}
+            {addedToCart && (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-5 h-5 animate-bounce">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            )}
+
             {!user 
               ? 'Inicia sesión para comprar' 
-              : stockReal > 0 
-                ? 'Añadir al Carrito' 
-                : 'Agotado / Sin Stock'}
+              : addedToCart
+                ? '¡Se añadió a su carrito de compras!' 
+                : stockReal > 0 
+                  ? 'Añadir al Carrito' 
+                  : 'Agotado / Sin Stock'}
           </button>
         </div>
       </div>
