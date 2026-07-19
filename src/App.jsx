@@ -38,7 +38,7 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/game/:id" element={<GameDetail />} />
-            <Route path="/carrito" element={<Carrito />} /> {/* 🚀 2. Nueva ruta añadida */}
+            <Route path="/carrito" element={<Carrito />} /> 
 
             
             <Route path="/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
