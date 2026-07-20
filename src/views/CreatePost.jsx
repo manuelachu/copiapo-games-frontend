@@ -7,7 +7,13 @@ export default function CreatePost() {
   const [precio, setPrecio] = useState('');
   const [imagen, setImagen] = useState('');
   const [consola, setConsola] = useState('');
-  const [stock, setStock] = useState(''); 
+  const [stock, setStock] = useState('1'); // Por defecto 1 si es para vender el propio
+  
+  // 🌟 Nuevos estados de contacto
+  const [nombreContacto, setNombreContacto] = useState('');
+  const [facebook, setFacebook] = useState('');
+  const [instagram, setInstagram] = useState('');
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,7 +27,6 @@ export default function CreatePost() {
         return;
       }
 
-      
       const cargado_por = userRol === 'admin' ? 'usuario administrador' : 'usuario sean usuarios';
 
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {
@@ -37,7 +42,10 @@ export default function CreatePost() {
           imagen, 
           consola, 
           stock: parseInt(stock),
-          cargado_por 
+          cargado_por,
+          nombre_contacto: nombreContacto,
+          facebook,
+          instagram
         })
       });
 
@@ -56,56 +64,102 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-8 flex justify-center items-center text-white">
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 p-6 rounded-lg shadow-xl">
-        <h2 className="text-2xl font-bold text-blue-500 text-center mb-6">🎮 Publicar un Juego para Vender</h2>
+    <div className="min-h-screen bg-slate-950 p-6 flex justify-center items-center text-white">
+      <div className="w-full max-w-5xl grid md:grid-cols-3 gap-6">
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-slate-300">Título del Videojuego</label>
-            <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={titulo} onChange={(e) => setTitulo(e.target.value)} required />
-          </div>
+        {/* 🌟 BLOQUE DE INSTRUCCIONES */}
+        <div className="md:col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-lg shadow-xl h-fit">
+          <h3 className="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">
+            💡 ¿Cómo vender tu juego?
+          </h3>
+          <ul className="space-y-4 text-sm text-slate-300 list-disc pl-4 leading-relaxed">
+            <li>
+              <strong className="text-white">Publica el artículo:</strong> Introduce los detalles básicos de tu videojuego y asigna un precio conveniente.
+            </li>
+            <li>
+              <strong className="text-white">Déjanos tu contacto:</strong> Rellena tu nombre y tus redes sociales para que los compradores de la zona te hablen directamente.
+            </li>
+            <li>
+              <strong className="text-white">Elimínalo al vender:</strong> Cuando concretes la venta del artículo, ve al detalle de tu publicación y pulsa el botón <span className="text-rose-400 font-semibold">"¡Ya lo vendí!"</span> para borrarlo inmediatamente del catálogo.
+            </li>
+          </ul>
+        </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-slate-300">Descripción</label>
-            <textarea className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white h-24 focus:border-blue-500 outline-none" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-1 text-slate-300">Precio ($)</label>
-              <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={precio} onChange={(e) => setPrecio(e.target.value)} required />
+        {/* FORMULARIO */}
+        <div className="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-lg shadow-xl">
+          <h2 className="text-2xl font-bold text-blue-500 text-center mb-6">🎮 Publicar un Juego para Vender</h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-slate-300">Título del Videojuego</label>
+                <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={titulo} onChange={(e) => setTitulo(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-slate-300">Consola / Plataforma</label>
+                <select 
+                  className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none cursor-pointer"
+                  value={consola} 
+                  onChange={(e) => setConsola(e.target.value)} 
+                  required
+                >
+                  <option value="" disabled>-- Selecciona --</option>
+                  <option value="Playstation">Playstation</option>
+                  <option value="Xbox">Xbox</option>
+                  <option value="Nintendo">Nintendo</option>
+                </select>
+              </div>
             </div>
+
             <div>
-              <label className="block text-sm font-semibold mb-1 text-slate-300">Unidades (Stock)</label>
-              <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" placeholder="Ej: 20" value={stock} onChange={(e) => setStock(e.target.value)} required min="1" />
+              <label className="block text-sm font-semibold mb-1 text-slate-300">Descripción</label>
+              <textarea className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white h-20 focus:border-blue-500 outline-none" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-slate-300">Consola / Plataforma</label>
-            <select 
-              className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none cursor-pointer"
-              value={consola} 
-              onChange={(e) => setConsola(e.target.value)} 
-              required
-            >
-              <option value="" disabled>-- Selecciona una plataforma --</option>
-              <option value="Playstation">Playstation</option>
-              <option value="Xbox">Xbox</option>
-              <option value="Nintendo">Nintendo</option>
-            </select>
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-slate-300">Precio ($)</label>
+                <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={precio} onChange={(e) => setPrecio(e.target.value)} required />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1 text-slate-300">Unidades (Stock)</label>
+                <input type="number" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={stock} onChange={(e) => setStock(e.target.value)} required min="1" />
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-1 text-slate-300">URL de la Imagen</label>
-            <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={imagen} onChange={(e) => setImagen(e.target.value)} required />
-          </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1 text-slate-300">URL de la Imagen</label>
+              <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={imagen} onChange={(e) => setImagen(e.target.value)} required />
+            </div>
 
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded transition-colors mt-2">
-            Publicar Videojuego
-          </button>
-        </form>
+            {/* 🌟 SECCIÓN DE REDES SOCIALES DE CONTACTO */}
+            <div className="border-t border-slate-800 pt-4 mt-2">
+              <h3 className="text-md font-bold text-amber-400 mb-3">👤 Información de Contacto para el Comprador</h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-slate-400">Tu Nombre Comercial o de Contacto</label>
+                  <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Ej: Juan Pérez" value={nombreContacto} onChange={(e) => setNombreContacto(e.target.value)} required />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-400">Nombre de Usuario en Facebook (Opcional)</label>
+                    <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Ej: juan.perez.copiapo" value={facebook} onChange={(e) => setFacebook(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold mb-1 text-slate-400">Instagram (Opcional)</label>
+                    <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Ej: @juan_games" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded transition-colors mt-4">
+              Publicar Videojuego
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
