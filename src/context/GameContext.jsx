@@ -1,88 +1,91 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState } from 'react';
 
 export const GameContext = createContext();
 
-export const GameProvider = ({ children }) => {
-  const [games, setGames] = useState([]);
-  const [user, setUser] = useState(null); 
-  const [cart, setCart] = useState([]); 
-  
-  // 🟢 Agregamos el estado del filtro global
+export function GameProvider({ children }) {
+  // 1. Estado de Autenticación (con persistencia básica en localStorage)
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  // 2. Estado del Catálogo de Videojuegos (Actualizado con sellerEmail para las pruebas)
+  const [games, setGames] = useState([
+    { id: '1', title: 'God of War Ragnarök', price: 49990, category: 'playstation', sellerEmail: 'admin@copiapogames.cl', image: 'https://via.placeholder.com/300x400', description: 'Épica aventura nórdica.' },
+    { id: '2', title: 'Halo Infinite', price: 39990, category: 'xbox', sellerEmail: 'user@gmail.com', image: 'https://via.placeholder.com/300x400', description: 'El regreso del Jefe Maestro.' },
+    { id: '3', title: 'Zelda: Tears of the Kingdom', price: 59990, category: 'nintendo', sellerEmail: 'admin@copiapogames.cl', image: 'https://via.placeholder.com/300x400', description: 'Explora los cielos de Hyrule.' },
+    { id: '4', title: 'Spider-Man 2', price: 54990, category: 'playstation', sellerEmail: 'user@gmail.com', image: 'https://via.placeholder.com/300x400', description: 'Dos Spider-Man, una gran amenaza.' }
+  ]);
+
+  // 3. Estado del Carrito de Compras
+  const [cart, setCart] = useState([]);
+
+  // 4. Estado del Filtro Global (Usado en Home y Footer)
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    const cargarJuegos = async () => {
-      try {
-        const response = await fetch('https://copiapo-games-backend.onrender.com/api/games');
-        if (response.ok) {
-          const data = await response.json();
-          setGames(data);
-        }
-      } catch (error) {
-        console.error("Error al conectar con la API de juegos:", error);
-      }
-    };
-    cargarJuegos();
-  }, []);
-
-  const loginUser = (userData) => {
-    setUser(userData);
+  // Funciones de Autenticación
+  const login = (email, password) => {
+    const mockUser = { email, token: 'fake-jwt-token' };
+    setUser(mockUser);
+    localStorage.setItem('user', JSON.stringify(mockUser));
   };
 
   const logout = () => {
     setUser(null);
-    setCart([]); 
+    localStorage.removeItem('user');
+    setCart([]);
   };
 
+  // Funciones del Carrito
   const addToCart = (game) => {
     setCart((prevCart) => {
-      const existingGame = prevCart.find((item) => item.id === game.id);
-      
-      if (existingGame) {
-        if (existingGame.quantity >= (game.stock ?? 0)) {
-          alert(`¡Límite alcanzado! Solo quedan ${game.stock} unidades de ${game.titulo || game.title || 'este juego'}.`);
-          return prevCart;
-        }
+      const existing = prevCart.find((item) => item.id === game.id);
+      if (existing) {
         return prevCart.map((item) =>
           item.id === game.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      
-      if ((game.stock ?? 0) <= 0) {
-        alert("¡Lo sentimos! Este juego no cuenta con stock disponible.");
-        return prevCart;
-      }
-      
       return [...prevCart, { ...game, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (gameId) => {
-    setCart((prevCart) =>
-      prevCart
-        .map((item) => (item.id === gameId ? { ...item, quantity: item.quantity - 1 } : item))
-        .filter((item) => item.quantity > 0)
-    );
+  // AJUSTE: Ahora vincula el juego creado al email del usuario activo
+  const createPost = (newGame) => {
+    setGames((prevGames) => [
+      ...prevGames,
+      { 
+        ...newGame, 
+        id: Date.now().toString(),
+        sellerEmail: user ? user.email : 'anonimo@copiapogames.cl' 
+      }
+    ]);
   };
 
-  const deleteFromCart = (gameId) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== gameId));
+  // NUEVA: Función para borrar juegos desde el panel de perfil
+  const deleteGame = (gameId) => {
+    setGames((prevGames) => prevGames.filter((game) => game.id !== gameId));
   };
 
-  const clearCart = () => setCart([]);
-
-  const totalAmount = cart.reduce((acc, item) => acc + Number(item.price || item.precio || 0) * item.quantity, 0);
+  // Cálculo dinámico de totalItems para el Navbar
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <GameContext.Provider value={{ 
-      games, user, cart, login: loginUser, logout, 
-      addToCart, removeFromCart, deleteFromCart, clearCart,
-      totalAmount, totalItems, setGames,
-      filter,     // 🟢 Exponemos el estado del filtro
-      setFilter   // 🟢 Exponemos la función modificadora
+    <GameContext.Provider value={{
+      user,
+      login,
+      logout,
+      games,
+      setGames,
+      createPost,
+      deleteGame, // Agregado al proveedor para que Profile.jsx pueda usarlo
+      cart,
+      setCart,
+      addToCart,
+      totalItems,
+      filter,
+      setFilter
     }}>
       {children}
     </GameContext.Provider>
   );
-};
+}
