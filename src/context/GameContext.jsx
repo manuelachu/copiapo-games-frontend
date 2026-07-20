@@ -1,33 +1,66 @@
-import { createContext, useState } from 'react';
+import { createContext, useState, useEffect } from 'react';
 
 export const GameContext = createContext();
 
+// Reemplaza esto con la URL real de tu backend en Render si es distinta
+const API_URL = 'https://copiapo-games-backend.onrender.com';
+
 export function GameProvider({ children }) {
-  // 1. Estado de Autenticación (con persistencia básica en localStorage)
+  // 1. Estado de Autenticación
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  // 2. Estado del Catálogo de Videojuegos (Actualizado con sellerEmail para las pruebas)
-  const [games, setGames] = useState([
-    { id: '1', title: 'God of War Ragnarök', price: 49990, category: 'playstation', sellerEmail: 'admin@copiapogames.cl', image: 'https://via.placeholder.com/300x400', description: 'Épica aventura nórdica.' },
-    { id: '2', title: 'Halo Infinite', price: 39990, category: 'xbox', sellerEmail: 'user@gmail.com', image: 'https://via.placeholder.com/300x400', description: 'El regreso del Jefe Maestro.' },
-    { id: '3', title: 'Zelda: Tears of the Kingdom', price: 59990, category: 'nintendo', sellerEmail: 'admin@copiapogames.cl', image: 'https://via.placeholder.com/300x400', description: 'Explora los cielos de Hyrule.' },
-    { id: '4', title: 'Spider-Man 2', price: 54990, category: 'playstation', sellerEmail: 'user@gmail.com', image: 'https://via.placeholder.com/300x400', description: 'Dos Spider-Man, una gran amenaza.' }
-  ]);
+  // 2. Estado del Catálogo de Videojuegos (Inicia vacío y se llena desde la BD)
+  const [games, setGames] = useState([]);
 
   // 3. Estado del Carrito de Compras
   const [cart, setCart] = useState([]);
 
-  // 4. Estado del Filtro Global (Usado en Home y Footer)
+  // 4. Estado del Filtro Global
   const [filter, setFilter] = useState('all');
 
-  // Funciones de Autenticación
-  const login = (email, password) => {
-    const mockUser = { email, token: 'fake-jwt-token' };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
+  // NUEVO: Cargar los juegos desde el backend en Render cuando se abra la página
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const response = await fetch(`${API_URL}/games`); // Asegúrate de que el endpoint en tu backend sea /games
+        if (response.ok) {
+          const data = await response.json();
+          setGames(data);
+        } else {
+          console.error("Error al obtener los juegos desde el servidor");
+        }
+      } catch (error) {
+        console.error("Error de red conectando al backend:", error);
+      }
+    };
+
+    fetchGames();
+  }, []);
+
+  // Funciones de Autenticación conectadas al backend
+  const login = async (email, password) => {
+    try {
+      const response = await fetch(`${API_URL}/login`, { // Asegúrate de que tu ruta de login sea /login
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Guardamos el usuario real (y el token si tu backend lo devuelve)
+        const loggedUser = { email, token: data.token || 'fake-jwt-token' };
+        setUser(loggedUser);
+        localStorage.setItem('user', JSON.stringify(loggedUser));
+      } else {
+        alert("Credenciales incorrectas");
+      }
+    } catch (error) {
+      console.error("Error en el login:", error);
+    }
   };
 
   const logout = () => {
@@ -49,21 +82,43 @@ export function GameProvider({ children }) {
     });
   };
 
-  // AJUSTE: Ahora vincula el juego creado al email del usuario activo
-  const createPost = (newGame) => {
-    setGames((prevGames) => [
-      ...prevGames,
-      { 
-        ...newGame, 
-        id: Date.now().toString(),
-        sellerEmail: user ? user.email : 'anonimo@copiapogames.cl' 
+  // Crear publicación guardándola en la Base de Datos
+  const createPost = async (newGame) => {
+    try {
+      const gameData = {
+        ...newGame,
+        sellerEmail: user ? user.email : 'anonimo@copiapogames.cl'
+      };
+
+      const response = await fetch(`${API_URL}/games`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gameData)
+      });
+
+      if (response.ok) {
+        const createdGame = await response.json();
+        // Agregamos el juego retornado por la BD al estado local
+        setGames((prevGames) => [...prevGames, createdGame]);
       }
-    ]);
+    } catch (error) {
+      console.error("Error al crear el juego en la BD:", error);
+    }
   };
 
-  // NUEVA: Función para borrar juegos desde el panel de perfil
-  const deleteGame = (gameId) => {
-    setGames((prevGames) => prevGames.filter((game) => game.id !== gameId));
+  // Borrar juego de la Base de Datos
+  const deleteGame = async (gameId) => {
+    try {
+      const response = await fetch(`${API_URL}/games/${gameId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setGames((prevGames) => prevGames.filter((game) => game.id !== gameId));
+      }
+    } catch (error) {
+      console.error("Error al eliminar el juego de la BD:", error);
+    }
   };
 
   // Cálculo dinámico de totalItems para el Navbar
@@ -77,7 +132,7 @@ export function GameProvider({ children }) {
       games,
       setGames,
       createPost,
-      deleteGame, // Agregado al proveedor para que Profile.jsx pueda usarlo
+      deleteGame,
       cart,
       setCart,
       addToCart,
