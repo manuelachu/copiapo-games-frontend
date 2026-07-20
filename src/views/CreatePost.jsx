@@ -7,9 +7,9 @@ export default function CreatePost() {
   const [precio, setPrecio] = useState('');
   const [imagen, setImagen] = useState('');
   const [consola, setConsola] = useState('');
-  const [stock, setStock] = useState('1'); // Por defecto 1 si es para vender el propio
+  const [stock, setStock] = useState('1'); 
   
-  // 🌟 Nuevos estados de contacto
+  // Nuevos estados para capturar los datos de contacto
   const [nombreContacto, setNombreContacto] = useState('');
   const [facebook, setFacebook] = useState('');
   const [instagram, setInstagram] = useState('');
@@ -67,7 +67,7 @@ export default function CreatePost() {
     <div className="min-h-screen bg-slate-950 p-6 flex justify-center items-center text-white">
       <div className="w-full max-w-5xl grid md:grid-cols-3 gap-6">
         
-        {/* 🌟 BLOQUE DE INSTRUCCIONES */}
+        {/* Panel lateral con instrucciones */}
         <div className="md:col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-lg shadow-xl h-fit">
           <h3 className="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">
             💡 ¿Cómo vender tu juego?
@@ -85,7 +85,7 @@ export default function CreatePost() {
           </ul>
         </div>
 
-        {/* FORMULARIO */}
+        {/* Formulario principal */}
         <div className="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-lg shadow-xl">
           <h2 className="text-2xl font-bold text-blue-500 text-center mb-6">🎮 Publicar un Juego para Vender</h2>
           
@@ -132,24 +132,24 @@ export default function CreatePost() {
               <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={imagen} onChange={(e) => setImagen(e.target.value)} required />
             </div>
 
-            {/* 🌟 SECCIÓN DE REDES SOCIALES DE CONTACTO */}
+            {/* Información de contacto */}
             <div className="border-t border-slate-800 pt-4 mt-2">
               <h3 className="text-md font-bold text-amber-400 mb-3">👤 Información de Contacto para el Comprador</h3>
               
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-slate-400">Tu Nombre Comercial o de Contacto</label>
-                  <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Ej: Juan Pérez" value={nombreContacto} onChange={(e) => setNombreContacto(e.target.value)} required />
+                  <label className="block text-xs font-semibold mb-1 text-slate-400">Tu Nombre de Contacto</label>
+                  <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Ej: Manuel Achu" value={nombreContacto} onChange={(e) => setNombreContacto(e.target.value)} required />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold mb-1 text-slate-400">Nombre de Usuario en Facebook (Opcional)</label>
-                    <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Ej: juan.perez.copiapo" value={facebook} onChange={(e) => setFacebook(e.target.value)} />
+                    <label className="block text-xs font-semibold mb-1 text-slate-400">Nombre de Facebook (Opcional)</label>
+                    <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="machu2022" value={facebook} onChange={(e) => setFacebook(e.target.value)} />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold mb-1 text-slate-400">Instagram (Opcional)</label>
-                    <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Ej: @juan_games" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
+                    <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="__machu__" value={instagram} onChange={(e) => setInstagram(e.target.value)} />
                   </div>
                 </div>
               </div>

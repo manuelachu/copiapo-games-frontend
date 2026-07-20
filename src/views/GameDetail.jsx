@@ -4,7 +4,7 @@ import { GameContext } from '../context/GameContext';
 
 export default function GameDetail() {
   const { id } = useParams();
-  const { games, setGames, addToCart, user } = useContext(GameContext); // 🌟 Extraemos setGames para borrar localmente
+  const { games, setGames, addToCart, user } = useContext(GameContext);
   const navigate = useNavigate();
 
   const [addedToCart, setAddedToCart] = useState(false);
@@ -25,11 +25,12 @@ export default function GameDetail() {
   const uploaderRole = game.role || game.user_role || game.cargado_por || 'admin';
   const isCustomUser = uploaderRole.toLowerCase().includes('usuario sean usuarios') || uploaderRole.toLowerCase() === 'user';
 
-  // 🌟 Evaluar si el usuario en sesión es el dueño del juego
-  // Compara el id del usuario del token/context con el usuario_id guardado en el juego
-  const isOwner = isCustomUser && user && String(game.usuario_id) === String(user.id);
+  // 🌟 Mapeo flexible e inteligente de IDs para garantizar la detección del Owner
+  const currentUserId = user?.id || user?.usuario_id || user?.id_usuario;
+  const gameOwnerId = game.usuario_id || game.userId || game.usuarioId;
 
-  // 🌟 Acción para borrar el juego cuando se concrete la venta externa
+  const isOwner = isCustomUser && currentUserId && String(gameOwnerId) === String(currentUserId);
+
   const handleMarkAsSold = async () => {
     const confirmar = window.confirm("¿Confirmas que vendiste este juego? Se eliminará de la tienda permanentemente.");
     if (!confirmar) return;
@@ -50,7 +51,7 @@ export default function GameDetail() {
         }
         navigate('/');
       } else {
-        alert("No se pudo eliminar el juego. Verifica tus permisos.");
+        alert("No se pudo eliminar el juego. Verifica tus permisos en el servidor.");
       }
     } catch (error) {
       console.error(error);
@@ -97,7 +98,6 @@ export default function GameDetail() {
           <p className="text-3xl text-emerald-400 font-bold mb-4">${precio.toLocaleString('es-CL')}</p>
           <p className="text-slate-400 leading-relaxed mb-6">{descripcion}</p>
           
-          {/* 🌟 VISTA CONDICIONAL: SI ES JUEGO DE UN USUARIO COMÚN */}
           {isCustomUser ? (
             <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-3">
               <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">👤 Datos de Contacto Directo:</h3>
@@ -116,7 +116,6 @@ export default function GameDetail() {
                 )}
               </div>
 
-              {/* MUESTRA EL BOTÓN DE MARCAR COMO VENDIDO SOLO AL DUEÑO */}
               {isOwner ? (
                 <button 
                   onClick={handleMarkAsSold}
@@ -131,7 +130,6 @@ export default function GameDetail() {
               )}
             </div>
           ) : (
-            /* BOTÓN CLÁSICO PARA JUEGOS DE LA TIENDA */
             <button 
               onClick={handlePurchase}
               disabled={(user && stockReal <= 0) || addedToCart}
