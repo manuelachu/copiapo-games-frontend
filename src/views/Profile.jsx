@@ -7,18 +7,16 @@ export default function Profile() {
   if (!user) {
     return (
       <div className="p-8 text-center text-slate-400">
-        No has iniciado sesión.
+        No has iniciado sesión. Por favor ingresa a tu cuenta para ver tus juegos.
       </div>
     );
   }
 
-  // Filtrado adaptado a la estructura de tu Base de Datos
-  const myGames = games.filter(game => {
-    if (user.id && Number(game.usuario_id) === Number(user.id)) return true;
-    if (user.email === 'cholo@gmail.com' && game.cargado_por === 'usuario sean usuarios') return true;
-    if (user.email === 'manuel.achu.aracena@gmail.com' && game.cargado_por === 'usuario administrador') return true;
-    return false;
-  });
+  // FILTRADO TOTALMENTE DINÁMICO: 
+  // Compara el id del usuario conectado con el usuario_id del juego, sin importar quién sea.
+  const myGames = games ? games.filter(game => {
+    return Number(game.usuario_id) === Number(user.id);
+  }) : [];
 
   const handleDelete = (id, titulo) => {
     const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar "${titulo}"?`);
@@ -28,25 +26,27 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-5xl mx-auto">
-      {/* Cabecera del Perfil */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 shadow-xl">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen text-slate-100">
+      {/* Cabecera del Perfil Dinámica */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 shadow-xl mt-4">
         <div className="bg-blue-600 h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner uppercase">
-          {user.email.charAt(0)}
+          {user.email ? user.email.charAt(0) : 'U'}
         </div>
         <div className="text-center sm:text-left">
           <h1 className="text-2xl font-extrabold text-white">Panel de Mis Publicaciones</h1>
-          <p className="text-sm text-slate-400 mt-0.5">Conectado como:</p>
-          <span className="text-xs font-mono bg-slate-950 text-blue-400 px-2 py-1 rounded border border-slate-800 inline-block mt-1">
-            {user.email}
-          </span>
+          <p className="text-sm text-slate-400 mt-0.5">
+            Conectado como: 
+            <span className="text-blue-400 font-mono text-xs ml-2 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+              {user.email}
+            </span>
+          </p>
         </div>
       </div>
 
-      {/* MENSAJE SOLICITADO */}
-      <div className="bg-blue-950/40 border border-blue-800/60 rounded-xl p-4 mb-8 text-sm text-blue-300 flex items-start gap-3 shadow-md">
-        <span className="text-base mt-0.5">ℹ️</span>
-        <p>
+      {/* MENSAJE INFORMATIVO SOLICITADO */}
+      <div className="bg-blue-950/40 border border-blue-900 rounded-xl p-5 mb-8 text-sm text-blue-300 flex items-start gap-3 shadow-md">
+        <span className="text-lg mt-0.5">ℹ️</span>
+        <p className="leading-relaxed">
           En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla, teniendo la opción de borrarlos una vez que se hayan vendido.
         </p>
       </div>
@@ -62,8 +62,8 @@ export default function Profile() {
 
         {myGames.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
-            <p className="text-slate-400 text-sm">No se encontraron videojuegos asociados a tu cuenta.</p>
-            <p className="text-xs text-slate-600 mt-1">Si acabas de actualizar en Netlify, asegúrate de que tus datos estén sincronizándose correctamente.</p>
+            <p className="text-slate-400 text-sm">Aún no has subido ningún videojuego a la tienda.</p>
+            <p className="text-xs text-slate-500 mt-1">¡Utiliza la opción "Vender Juego" en el menú para publicar el primero!</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
