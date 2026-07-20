@@ -12,16 +12,11 @@ export default function Profile() {
     );
   }
 
-  // FILTRO ADAPTADO A TU BASE DE DATOS:
-  // Buscamos coincidencia ya sea por la ID del usuario (2) o por si coincide con el rol.
+  // Filtrado adaptado a la estructura de tu Base de Datos
   const myGames = games.filter(game => {
-    // Si tu contexto guarda el usuario con su ID de la BD (user.id === 2)
     if (user.id && Number(game.usuario_id) === Number(user.id)) return true;
-    
-    // Respaldos por texto según tu BD ("usuario sean usuarios" para cholo@gmail.com)
     if (user.email === 'cholo@gmail.com' && game.cargado_por === 'usuario sean usuarios') return true;
     if (user.email === 'manuel.achu.aracena@gmail.com' && game.cargado_por === 'usuario administrador') return true;
-    
     return false;
   });
 
@@ -35,7 +30,7 @@ export default function Profile() {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       {/* Cabecera del Perfil */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-8 flex flex-col sm:flex-row items-center gap-4 shadow-xl">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 shadow-xl">
         <div className="bg-blue-600 h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner uppercase">
           {user.email.charAt(0)}
         </div>
@@ -43,9 +38,17 @@ export default function Profile() {
           <h1 className="text-2xl font-extrabold text-white">Panel de Mis Publicaciones</h1>
           <p className="text-sm text-slate-400 mt-0.5">Conectado como:</p>
           <span className="text-xs font-mono bg-slate-950 text-blue-400 px-2 py-1 rounded border border-slate-800 inline-block mt-1">
-            {user.email} ({user.rol || 'user'})
+            {user.email}
           </span>
         </div>
+      </div>
+
+      {/* MENSAJE SOLICITADO */}
+      <div className="bg-blue-950/40 border border-blue-800/60 rounded-xl p-4 mb-8 text-sm text-blue-300 flex items-start gap-3 shadow-md">
+        <span className="text-base mt-0.5">ℹ️</span>
+        <p>
+          En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla, teniendo la opción de borrarlos una vez que se hayan vendido.
+        </p>
       </div>
 
       {/* Tabla de juegos cargados */}
@@ -60,7 +63,7 @@ export default function Profile() {
         {myGames.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
             <p className="text-slate-400 text-sm">No se encontraron videojuegos asociados a tu cuenta.</p>
-            <p className="text-xs text-slate-600 mt-1">Si acabas de desplegar, verifica que los datos carguen desde tu API/BD.</p>
+            <p className="text-xs text-slate-600 mt-1">Si acabas de actualizar en Netlify, asegúrate de que tus datos estén sincronizándose correctamente.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -76,7 +79,6 @@ export default function Profile() {
               <tbody className="divide-y divide-slate-800/50">
                 {myGames.map((game) => (
                   <tr key={game.id} className="hover:bg-slate-800/30 transition-colors">
-                    {/* Imagen e Info usando tus propiedades de BD: game.titulo, game.imagen */}
                     <td className="py-4 px-4 flex items-center gap-3">
                       <img 
                         src={game.imagen || 'https://via.placeholder.com/50x60'} 
@@ -88,17 +90,14 @@ export default function Profile() {
                         <p className="text-xs text-slate-500 sm:hidden capitalize">{game.consola}</p>
                       </div>
                     </td>
-                    {/* Consola */}
                     <td className="py-4 px-4 hidden sm:table-cell">
                       <span className="px-2 py-0.5 text-xs font-medium rounded capitalize bg-slate-800 text-slate-300 border border-slate-700">
                         {game.consola}
                       </span>
                     </td>
-                    {/* Precio */}
                     <td className="py-4 px-4 text-emerald-400 font-bold text-sm md:text-base">
                       ${Number(game.precio).toLocaleString('es-CL')}
                     </td>
-                    {/* Borrar */}
                     <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => handleDelete(game.id, game.titulo)}
