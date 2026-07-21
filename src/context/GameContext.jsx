@@ -36,6 +36,41 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
+  // 🔑 Función de LOGIN (la que te estaba faltando expuesta)
+  const login = async (email, password) => {
+    try {
+      const response = await fetch('https://copiapo-games-backend.onrender.com/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Guardar en localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userEmail', data.user.email);
+        localStorage.setItem('rol', data.user.rol || data.user.role || 'user');
+        if (data.user.id) localStorage.setItem('userId', data.user.id);
+
+        // Actualizar el estado global
+        setUser({
+          email: data.user.email,
+          rol: data.user.rol || data.user.role || 'user',
+          id: data.user.id ? Number(data.user.id) : null
+        });
+
+        return { success: true };
+      } else {
+        return { success: false, message: data.message || data.error || 'Credenciales inválidas' };
+      }
+    } catch (error) {
+      console.error('Error en el login:', error);
+      return { success: false, message: 'Error de conexión con el servidor.' };
+    }
+  };
+
   // Función para ELIMINAR un juego
   const deleteGame = async (id) => {
     try {
@@ -54,7 +89,6 @@ export const GameProvider = ({ children }) => {
       });
 
       if (response.ok) {
-        // Filtramos la lista inmediatamente en memoria para actualización rápida en UI
         setGames(prevGames => prevGames.filter(game => Number(game.id) !== Number(id)));
         return true;
       } else {
@@ -70,7 +104,7 @@ export const GameProvider = ({ children }) => {
   };
 
   return (
-    <GameContext.Provider value={{ user, setUser, games, setGames, deleteGame, fetchGames }}>
+    <GameContext.Provider value={{ user, setUser, games, setGames, login, deleteGame, fetchGames }}>
       {children}
     </GameContext.Provider>
   );
