@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react';
 import { useContext, useState } from 'react';
 import { GameContext } from '../context/GameContext';
 
@@ -25,7 +25,6 @@ export default function GameDetail() {
   const uploaderRole = game.role || game.user_role || game.cargado_por || 'admin';
   const isCustomUser = uploaderRole.toLowerCase().includes('usuario sean usuarios') || uploaderRole.toLowerCase() === 'user';
 
-  // 🌟 Mapeo flexible e inteligente de IDs para garantizar la detección del Owner
   const currentUserId = user?.id || user?.usuario_id || user?.id_usuario;
   const gameOwnerId = game.usuario_id || game.userId || game.usuarioId;
 
@@ -64,9 +63,11 @@ export default function GameDetail() {
       navigate('/login');
     } else {
       const juegoParaCarrito = { id: game.id, title: titulo, price: precio, image: imagen, category: categoria, stock: stockReal };
-      addToCart(juegoParaCarrito);
-      setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 2000);
+      if (typeof addToCart === 'function') {
+        addToCart(juegoParaCarrito);
+        setAddedToCart(true);
+        setTimeout(() => setAddedToCart(false), 2000);
+      }
     }
   };
 
@@ -90,7 +91,7 @@ export default function GameDetail() {
 
             <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 ${isCustomUser ? 'text-amber-400 bg-amber-950' : 'text-purple-400 bg-purple-950'}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${isCustomUser ? 'bg-amber-400' : 'bg-purple-400'}`}></span>
-              Vendído por: {isCustomUser ? 'Usuario de la Comunidad' : 'Administrador'}
+              Vendido por: {isCustomUser ? 'Usuario de la Comunidad' : 'Administrador'}
             </span>
           </div>
           

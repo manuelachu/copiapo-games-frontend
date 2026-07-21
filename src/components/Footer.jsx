@@ -3,15 +3,11 @@ import { GameContext } from '../context/GameContext';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  
-  
   const { setFilter } = useContext(GameContext);
 
   const handleFooterFilter = (category) => {
-    if (setFilter) {
-      setFilter(category); 
-      
-      
+    if (typeof setFilter === 'function') {
+      setFilter(category);
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
@@ -22,7 +18,7 @@ export default function Footer() {
   return (
     <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-8 mt-auto w-full">
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-       
+        
         <div className="text-center md:text-left">
           <h3 className="text-white font-bold text-lg tracking-wide">
             COPIAPÓ <span className="text-blue-400">GAMES</span> STORE
@@ -32,7 +28,7 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Categorías interactivas con animación de scroll */}
+        {/* Categorías interactivas */}
         <div className="flex gap-6 text-sm items-center">
           <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider block mb-1 md:hidden">
             Categorías
@@ -57,7 +53,6 @@ export default function Footer() {
           </button>
         </div>
 
-        {/* Texto corregido para la Entrega Final */}
         <div className="text-center md:text-right text-xs text-slate-500">
           <p className="font-semibold text-slate-400">Trabajo Final - Integración Total</p>
           <p className="mt-0.5 text-blue-400/60">Node.js, React & PostgreSQL</p>

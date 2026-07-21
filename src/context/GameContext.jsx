@@ -5,6 +5,8 @@ export const GameContext = createContext();
 export const GameProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [games, setGames] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [filter, setFilter] = useState('Todos');
 
   // Cargar juegos desde la API backend
   const fetchGames = async () => {
@@ -36,6 +38,47 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
+  // 🛒 FUNCIONES DEL CARRITO DE COMPRAS
+  const addToCart = (product) => {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => String(item.id) === String(product.id));
+      if (existingItem) {
+        return prevCart.map((item) =>
+          String(item.id) === String(product.id)
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (id) => {
+    setCart((prevCart) =>
+      prevCart
+        .map((item) =>
+          String(item.id) === String(id) ? { ...item, quantity: item.quantity - 1 } : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  const deleteFromCart = (id) => {
+    setCart((prevCart) => prevCart.filter((item) => String(item.id) !== String(id)));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  // Cálculos dinámicos del Carrito
+  const totalAmount = cart.reduce((acc, item) => {
+    const precio = Number(item.price || item.precio || 0);
+    return acc + precio * item.quantity;
+  }, 0);
+
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
   // 🔑 Función de LOGIN
   const login = async (email, password) => {
     try {
@@ -48,13 +91,11 @@ export const GameProvider = ({ children }) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Guardar en localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('userEmail', data.user.email);
         localStorage.setItem('rol', data.user.rol || data.user.role || 'user');
         if (data.user.id) localStorage.setItem('userId', data.user.id);
 
-        // Actualizar el estado global
         setUser({
           email: data.user.email,
           rol: data.user.rol || data.user.role || 'user',
@@ -71,19 +112,17 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // 🚪 Función de LOGOUT (Cerrar Sesión)
+  // 🚪 Función de LOGOUT
   const logout = () => {
-    // Limpiamos la caché del navegador
     localStorage.removeItem('token');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('rol');
     localStorage.removeItem('userId');
-
-    // Limpiamos el estado del usuario
     setUser(null);
   };
 
-const deleteGame = async (id) => {
+  // 🗑️ Eliminar Juego del Backend
+  const deleteGame = async (id) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -91,10 +130,7 @@ const deleteGame = async (id) => {
         return false;
       }
 
-      // 🔍 1. Verificamos en consola qué ID se está enviando y a qué URL
       const url = `https://copiapo-games-backend.onrender.com/api/games/${id}`;
-      console.log(' Intentando eliminar en URL:', url, 'ID recibido:', id);
-
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
@@ -104,26 +140,9 @@ const deleteGame = async (id) => {
       });
 
       if (response.ok) {
-        setGames(prevGames => prevGames.filter(game => Number(game.id || game.id_juego) !== Number(id)));
+        setGames((prevGames) => prevGames.filter((game) => Number(game.id || game.id_juego) !== Number(id)));
         return true;
       } else {
-        // Si responde 404 con /api/games/${id}, intentamos la ruta sin /api por si el backend fue montado directo
-        if (response.status === 404) {
-          console.warn(' Probando ruta alternativa sin /api...');
-          const altResponse = await fetch(`https://copiapo-games-backend.onrender.com/games/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if (altResponse.ok) {
-            setGames(prevGames => prevGames.filter(game => Number(game.id || game.id_juego) !== Number(id)));
-            return true;
-          }
-        }
-
         const errorData = await response.json().catch(() => ({}));
         console.error('Respuesta de error del backend:', response.status, errorData);
         alert(`Error al eliminar: Error del servidor (Código ${response.status})`);
@@ -137,17 +156,28 @@ const deleteGame = async (id) => {
   };
 
   return (
-    <GameContext.Provider value={{ 
-      user, 
-      setUser, 
-      games, 
-      setGames, 
-      login, 
-      logout, 
-      logoutUser: logout, // Alias por si tu Navbar/Header usa logoutUser en vez de logout
-      deleteGame, 
-      fetchGames 
-    }}>
+    <GameContext.Provider
+      value={{
+        user,
+        setUser,
+        games,
+        setGames,
+        cart,
+        addToCart,
+        removeFromCart,
+        deleteFromCart,
+        clearCart,
+        totalAmount,
+        totalItems,
+        filter,
+        setFilter,
+        login,
+        logout,
+        logoutUser: logout,
+        deleteGame,
+        fetchGames
+      }}
+    >
       {children}
     </GameContext.Provider>
   );
