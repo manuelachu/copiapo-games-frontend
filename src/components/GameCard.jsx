@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { GameContext } from '../context/GameContext';
 
 export default function GameCard({ game }) {
-  const { addToCart } = useContext(GameContext);
+  const { addToCart, user } = useContext(GameContext);
+  const navigate = useNavigate();
 
   const titulo = game.title || game.titulo || "Videojuego sin título";
   const imagen = game.image || game.imagen || "https://via.placeholder.com/150";
@@ -17,6 +18,21 @@ export default function GameCard({ game }) {
 
   // 🎯 ETIQUETA HOMOLOGADA PARA MOSTRAR
   const etiquetaSubido = esAdmin ? 'Subido: Administrador' : 'Subido: Usuario';
+
+  // 🎯 MANEJADOR PARA AGREGAR AL CARRITO O REDIRIGIR A LOGIN
+  const handleAddToCart = () => {
+    const token = localStorage.getItem('token');
+
+    // Si no está autenticado (no hay token ni usuario en contexto)
+    if (!token && !user) {
+      alert('Debes iniciar sesión para añadir productos al carrito.');
+      navigate('/login');
+      return;
+    }
+
+    // Si la sesión existe, procede a añadir el juego
+    addToCart(game);
+  };
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-lg hover:border-blue-500 transition-all flex flex-col h-full">
@@ -62,7 +78,7 @@ export default function GameCard({ game }) {
           
           {esAdmin && (
             <button 
-              onClick={() => addToCart(game)}
+              onClick={handleAddToCart}
               disabled={stockReal <= 0}
               className={`font-bold py-2 px-1 rounded text-xs transition-colors truncate cursor-pointer ${
                 stockReal > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'
