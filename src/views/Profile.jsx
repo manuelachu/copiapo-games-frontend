@@ -15,35 +15,40 @@ export default function Profile() {
   // Verificación de Administrador
   const isAdmin = user.rol === 'admin' || user.role === 'admin';
 
-  // FILTRADO MULTI-CAPA:
-  // 1. Admin: Ve absolutamente TODOS los juegos.
-  // 2. Usuarios normales (Cholo, David, etc.): 
-  //    Compara tanto por ID (usuario_id) como por correo (sellerEmail / cargado_por / email).
+  // FILTRADO DE JUEGOS:
+  // 1. Admin: Ve todos los juegos.
+  // 2. Usuarios normales: Filtra por coincidencia de ID de usuario o Correo.
   const myGames = games ? games.filter(game => {
     if (isAdmin) return true;
 
-    // A) Coincidencia por ID de Usuario (si user.id existe)
     const matchById = user.id && Number(game.usuario_id) === Number(user.id);
-
-    // B) Coincidencia por Correo Electrónico
     const userEmailClean = user.email ? user.email.toLowerCase().trim() : '';
-    
+
     const matchByEmail = 
       (game.sellerEmail && game.sellerEmail.toLowerCase().trim() === userEmailClean) ||
       (game.email && game.email.toLowerCase().trim() === userEmailClean) ||
       (game.cargado_por && game.cargado_por.toLowerCase().trim() === userEmailClean);
 
-    // C) Caso especial para cuentas registradas previamente (como Cholo con ID 2)
     const matchLegacyCholo = userEmailClean.includes('cholo') && Number(game.usuario_id) === 2;
     const matchLegacyDavid = userEmailClean.includes('david') && Number(game.usuario_id) === 3;
 
     return matchById || matchByEmail || matchLegacyCholo || matchLegacyDavid;
   }) : [];
 
+  // Función para procesar el clic en Eliminar
   const handleDelete = async (id, titulo) => {
     const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar "${titulo}"?`);
-    if (confirmDelete && deleteGame) {
-      await deleteGame(id);
+    
+    if (confirmDelete) {
+      if (!deleteGame) {
+        alert("La función de eliminación no está vinculada correctamente.");
+        return;
+      }
+
+      const success = await deleteGame(id);
+      if (success) {
+        alert(`¡El videojuego "${titulo}" ha sido eliminado exitosamente!`);
+      }
     }
   };
 
