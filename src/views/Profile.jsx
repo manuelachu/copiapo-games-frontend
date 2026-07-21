@@ -12,10 +12,25 @@ export default function Profile() {
     );
   }
 
-  // FILTRADO TOTALMENTE DINÁMICO: 
-  // Compara el id del usuario conectado con el usuario_id del juego, sin importar quién sea.
+  // Comprobar si es Administrador
+  const isAdmin = user.rol === 'admin' || user.role === 'admin';
+
+  // FILTRADO DINÁMICO MEJORADO:
+  // 1. Si es Admin: Ve TODOS los juegos de la tienda.
+  // 2. Si es User: Filtra por id, usuario_id o por correo electrónico.
   const myGames = games ? games.filter(game => {
-    return Number(game.usuario_id) === Number(user.id);
+    if (isAdmin) return true;
+
+    // Comparación por ID (si existe user.id)
+    const matchId = user.id && Number(game.usuario_id) === Number(user.id);
+
+    // Comparación por Correo o Nombre
+    const matchEmail = 
+      game.sellerEmail === user.email || 
+      game.email === user.email || 
+      game.cargado_por === user.email;
+
+    return matchId || matchEmail;
   }) : [];
 
   const handleDelete = (id, titulo) => {
@@ -34,27 +49,35 @@ export default function Profile() {
         </div>
         <div className="text-center sm:text-left">
           <h1 className="text-2xl font-extrabold text-white">Panel de Mis Publicaciones</h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-sm text-slate-400 mt-0.5 flex items-center gap-2 justify-center sm:justify-start">
             Conectado como: 
-            <span className="text-blue-400 font-mono text-xs ml-2 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+            <span className="text-blue-400 font-mono text-xs bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
               {user.email}
             </span>
+            {isAdmin && (
+              <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs px-2 py-0.5 rounded font-bold uppercase">
+                Administrador
+              </span>
+            )}
           </p>
         </div>
       </div>
 
-      {/* MENSAJE INFORMATIVO SOLICITADO */}
+      {/* MENSAJE INFORMATIVO */}
       <div className="bg-blue-950/40 border border-blue-900 rounded-xl p-5 mb-8 text-sm text-blue-300 flex items-start gap-3 shadow-md">
         <span className="text-lg mt-0.5">ℹ️</span>
         <p className="leading-relaxed">
-          En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla, teniendo la opción de borrarlos una vez que se hayan vendido.
+          {isAdmin 
+            ? "Como administrador puedes visualizar y gestionar todas las publicaciones registradas en la tienda."
+            : "En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla, teniendo la opción de borrarlos una vez que se hayan vendido."
+          }
         </p>
       </div>
 
       {/* Tabla de juegos cargados */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          📦 Mis Productos en Venta
+          📦 {isAdmin ? 'Todos los Productos en Venta' : 'Mis Productos en Venta'}
           <span className="bg-slate-800 text-xs px-2.5 py-1 rounded-full text-slate-400">
             {myGames.length}
           </span>
