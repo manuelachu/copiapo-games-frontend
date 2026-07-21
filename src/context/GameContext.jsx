@@ -2,17 +2,17 @@ import { createContext, useState, useEffect } from 'react';
 
 export const GameContext = createContext();
 
-// Reemplaza esto con la URL real de tu backend en Render si es distinta
+// URL de tu backend en Render
 const API_URL = 'https://copiapo-games-backend.onrender.com';
 
 export function GameProvider({ children }) {
-  // 1. Estado de Autenticación
+  // 1. Estado de Autenticación (con persistencia básica en localStorage)
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  // 2. Estado del Catálogo de Videojuegos (Inicia vacío y se llena desde la BD)
+  // 2. Estado del Catálogo de Videojuegos (Inicia vacío y se llena desde PostgreSQL)
   const [games, setGames] = useState([]);
 
   // 3. Estado del Carrito de Compras
@@ -21,11 +21,11 @@ export function GameProvider({ children }) {
   // 4. Estado del Filtro Global
   const [filter, setFilter] = useState('all');
 
-  // NUEVO: Cargar los juegos desde el backend en Render cuando se abra la página
+  // TRAER JUEGOS: Carga los videojuegos desde la BD al inicializar la página
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const response = await fetch(`${API_URL}/games`); // Asegúrate de que el endpoint en tu backend sea /games
+        const response = await fetch(`${API_URL}/api/games`); // 👈 Corregido con /api/games
         if (response.ok) {
           const data = await response.json();
           setGames(data);
@@ -40,10 +40,10 @@ export function GameProvider({ children }) {
     fetchGames();
   }, []);
 
-  // Funciones de Autenticación conectadas al backend
+  // INICIAR SESIÓN: Conectado al endpoint de autenticación del backend
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${API_URL}/login`, { // Asegúrate de que tu ruta de login sea /login
+      const response = await fetch(`${API_URL}/api/auth/login`, { // 👈 Corregido con /api/auth/login
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -51,7 +51,7 @@ export function GameProvider({ children }) {
 
       if (response.ok) {
         const data = await response.json();
-        // Guardamos el usuario real (y el token si tu backend lo devuelve)
+        // Guardamos el email y el token enviado por tu backend
         const loggedUser = { email, token: data.token || 'fake-jwt-token' };
         setUser(loggedUser);
         localStorage.setItem('user', JSON.stringify(loggedUser));
@@ -63,13 +63,14 @@ export function GameProvider({ children }) {
     }
   };
 
+  // CERRAR SESIÓN
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
     setCart([]);
   };
 
-  // Funciones del Carrito
+  // FUNCIONES DEL CARRITO
   const addToCart = (game) => {
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.id === game.id);
@@ -82,7 +83,7 @@ export function GameProvider({ children }) {
     });
   };
 
-  // Crear publicación guardándola en la Base de Datos
+  // CREAR JUEGO: Guarda el nuevo juego en PostgreSQL a través del backend
   const createPost = async (newGame) => {
     try {
       const gameData = {
@@ -90,7 +91,7 @@ export function GameProvider({ children }) {
         sellerEmail: user ? user.email : 'anonimo@copiapogames.cl'
       };
 
-      const response = await fetch(`${API_URL}/games`, {
+      const response = await fetch(`${API_URL}/api/games`, { // 👈 Corregido con /api/games
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gameData)
@@ -98,7 +99,7 @@ export function GameProvider({ children }) {
 
       if (response.ok) {
         const createdGame = await response.json();
-        // Agregamos el juego retornado por la BD al estado local
+        // Agrega el juego retornado por la BD al estado para actualizar la UI
         setGames((prevGames) => [...prevGames, createdGame]);
       }
     } catch (error) {
@@ -106,10 +107,10 @@ export function GameProvider({ children }) {
     }
   };
 
-  // Borrar juego de la Base de Datos
+  // ELIMINAR JUEGO: Borra el juego usando el id
   const deleteGame = async (gameId) => {
     try {
-      const response = await fetch(`${API_URL}/games/${gameId}`, {
+      const response = await fetch(`${API_URL}/api/games/${gameId}`, { // 👈 Corregido con /api/games/:id
         method: 'DELETE'
       });
 
