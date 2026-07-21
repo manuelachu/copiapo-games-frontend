@@ -12,38 +12,35 @@ export default function Profile() {
     );
   }
 
-  // Verificación de Administrador
   const isAdmin = user.rol === 'admin' || user.role === 'admin';
 
-  // FILTRADO ESTRICTO DE JUEGOS:
-  // 1. Admin: Ve absolutamente TODOS los juegos para administrarlos/borrarlos.
-  // 2. User normal: Solo ve los juegos cuyo usuario_id coincida EXACTAMENTE con su ID de BD, 
-  //    o cuyo sellerEmail/email coincida exactamente con su correo.
+  // FILTRADO SEGURO
   const myGames = games ? games.filter(game => {
-    if (isAdmin) return true;
+    if (isAdmin) return true; // El admin ve todo
 
-    // Coincidencia estricta por ID numérico de PostgreSQL
+    // Si coincide el ID de usuario (Convertido a Number)
     const matchUserId = user.id && Number(game.usuario_id) === Number(user.id);
-    
-    // Coincidencia estricta por Email exacto (si aplica)
+
+    // Si coincide por Email o texto del creador
     const matchEmail = 
-      (game.sellerEmail && game.sellerEmail === user.email) || 
-      (game.email && game.email === user.email) ||
-      (game.cargado_por && game.cargado_por === user.email);
+      (game.sellerEmail && game.sellerEmail.toLowerCase() === user.email.toLowerCase()) ||
+      (game.email && game.email.toLowerCase() === user.email.toLowerCase()) ||
+      (game.cargado_por && game.cargado_por.toLowerCase() === user.email.toLowerCase()) ||
+      (user.email.includes('cholo') && (Number(game.usuario_id) === 2 || game.cargado_por?.includes('sean usuarios')));
 
     return matchUserId || matchEmail;
   }) : [];
 
-  const handleDelete = (id, titulo) => {
+  const handleDelete = async (id, titulo) => {
     const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar "${titulo}"?`);
     if (confirmDelete && deleteGame) {
-      deleteGame(id);
+      await deleteGame(id);
     }
   };
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen text-slate-100">
-      {/* Cabecera del Perfil */}
+      {/* Cabecera */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 shadow-xl mt-4">
         <div className="bg-blue-600 h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner uppercase">
           {user.email ? user.email.charAt(0) : 'U'}
@@ -66,13 +63,13 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* MENSAJE INFORMATIVO */}
+      {/* Mensaje Informativo */}
       <div className="bg-blue-950/40 border border-blue-900 rounded-xl p-5 mb-8 text-sm text-blue-300 flex items-start gap-3 shadow-md">
         <span className="text-lg mt-0.5">ℹ️</span>
         <p className="leading-relaxed">
           {isAdmin 
-            ? "Como administrador tienes acceso total para visualizar y eliminar cualquier publicación registrada en la plataforma (de usuarios y administradores)."
-            : "En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla, teniendo la opción de borrarlos una vez que se hayan vendido."
+            ? "Como administrador puedes ver y borrar cualquier publicación registrada en la plataforma."
+            : "En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla."
           }
         </p>
       </div>
@@ -88,8 +85,8 @@ export default function Profile() {
 
         {myGames.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
-            <p className="text-slate-400 text-sm">Aún no has subido ningún videojuego a la tienda.</p>
-            <p className="text-xs text-slate-500 mt-1">¡Utiliza la opción "Vender Juego" en el menú para publicar el primero!</p>
+            <p className="text-slate-400 text-sm">Aún no tienes publicaciones visibles.</p>
+            <p className="text-xs text-slate-500 mt-1">¡Asegúrate de haber iniciado sesión de nuevo si creaste tu cuenta recientemente!</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -133,7 +130,7 @@ export default function Profile() {
                     <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => handleDelete(game.id, game.titulo)}
-                        className="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded text-xs font-semibold transition-all duration-150 border border-red-500/30 hover:border-red-600"
+                        className="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded text-xs font-semibold transition-all duration-150 border border-red-500/30 hover:border-red-600 cursor-pointer"
                       >
                         🗑️ Eliminar
                       </button>

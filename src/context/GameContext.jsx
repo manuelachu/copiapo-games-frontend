@@ -2,26 +2,29 @@ import { createContext, useState, useEffect } from 'react';
 
 export const GameContext = createContext();
 
-// URL de tu backend en Render
 const API_URL = 'https://copiapo-games-backend.onrender.com';
 
 export function GameProvider({ children }) {
-  // 1. Estado de Autenticación con persistencia en localStorage
+  // 1. Estado de Autenticación persistente
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (!savedUser) return null;
+    try {
+      const parsed = JSON.parse(savedUser);
+      return {
+        ...parsed,
+        id: parsed.id ? Number(parsed.id) : null
+      };
+    } catch (e) {
+      return null;
+    }
   });
 
-  // 2. Estado del Catálogo de Videojuegos
   const [games, setGames] = useState([]);
-
-  // 3. Estado del Carrito de Compras
   const [cart, setCart] = useState([]);
-
-  // 4. Estado del Filtro Global
   const [filter, setFilter] = useState('all');
 
-  // TRAER JUEGOS: Carga los videojuegos desde PostgreSQL
+  // TRAER JUEGOS
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -29,18 +32,15 @@ export function GameProvider({ children }) {
         if (response.ok) {
           const data = await response.json();
           setGames(data);
-        } else {
-          console.error("Error al obtener los juegos desde el servidor");
         }
       } catch (error) {
-        console.error("Error de red conectando al backend:", error);
+        console.error("Error cargando juegos:", error);
       }
     };
-
     fetchGames();
   }, []);
 
-  // INICIAR SESIÓN: Guardamos también el ID numérico enviado por PostgreSQL
+  // INICIAR SESIÓN
   const login = async (email, password) => {
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -53,7 +53,7 @@ export function GameProvider({ children }) {
 
       if (response.ok) {
         const loggedUser = { 
-          id: data.user?.id, // 👈 Capturamos el ID de la base de datos
+          id: data.user?.id ? Number(data.user.id) : null,
           email: data.user?.email || email, 
           token: data.token,
           rol: data.user?.rol || 'user'
@@ -83,7 +83,7 @@ export function GameProvider({ children }) {
     setCart([]);
   };
 
-  // FUNCIONES DEL CARRITO
+  // CARRITO
   const addToCart = (game) => {
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.id === game.id);
@@ -99,15 +99,18 @@ export function GameProvider({ children }) {
   // CREAR JUEGO
   const createPost = async (newGame) => {
     try {
-      const gameData = {
-        ...newGame,
-        sellerEmail: user ? user.email : 'anonimo@copiapogames.cl'
-      };
-
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/games`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(gameData)
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({
+          ...newGame,
+          usuario_id: user?.id,
+          sellerEmail: user?.email
+        })
       });
 
       if (response.ok) {
@@ -115,26 +118,32 @@ export function GameProvider({ children }) {
         setGames((prevGames) => [...prevGames, createdGame]);
       }
     } catch (error) {
-      console.error("Error al crear el juego en la BD:", error);
+      console.error("Error creando juego:", error);
     }
   };
 
-  // ELIMINAR JUEGO
+  // ELIMINAR JUEGO (Conectado al Backend)
   const deleteGame = async (gameId) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_URL}/api/games/${gameId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
       });
 
-      if (response.ok) {
-        setGames((prevGames) => prevGames.filter((game) => game.id !== gameId));
+      if (response.ok || response.status === 204) {
+        // Actualizamos el estado en React eliminando el juego de la lista en tiempo real
+        setGames((prevGames) => prevGames.filter((game) => Number(game.id) !== Number(gameId)));
+      } else {
+        console.error("No se pudo eliminar el juego en el servidor");
       }
     } catch (error) {
-      console.error("Error al eliminar el juego de la BD:", error);
+      console.error("Error al eliminar el juego:", error);
     }
   };
 
-  // Cálculo dinámico de ítems para el Navbar
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
