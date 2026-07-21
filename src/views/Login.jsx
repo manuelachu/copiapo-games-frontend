@@ -11,7 +11,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Llamamos directamente a la función login del contexto
+    
     const result = await login(email, password);
 
     if (result.success) {

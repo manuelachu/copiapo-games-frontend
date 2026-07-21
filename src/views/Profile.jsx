@@ -12,12 +12,10 @@ export default function Profile() {
     );
   }
 
-  // Verificación de Administrador
+ 
   const isAdmin = user.rol === 'admin' || user.role === 'admin';
 
-  // FILTRADO DE JUEGOS:
-  // 1. Admin: Ve todos los juegos.
-  // 2. Usuarios normales: Filtra por coincidencia de ID de usuario o Correo.
+  
   const myGames = games ? games.filter(game => {
     if (isAdmin) return true;
 
@@ -35,7 +33,7 @@ export default function Profile() {
     return matchById || matchByEmail || matchLegacyCholo || matchLegacyDavid;
   }) : [];
 
-  // Función para procesar el clic en Eliminar sin romper el flujo
+  
   const handleDelete = async (id, titulo) => {
     if (!id) {
       alert("Error: No se encontró el ID del juego a eliminar.");
@@ -45,7 +43,7 @@ export default function Profile() {
     const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar "${titulo}"?`);
     if (!confirmDelete) return;
 
-    // Si la función deleteGame existe en el context, la ejecuta directamente
+    
     if (typeof deleteGame === 'function') {
       const success = await deleteGame(id);
       if (success) {
@@ -54,7 +52,7 @@ export default function Profile() {
       return;
     }
 
-    // Fallback: Si no existe deleteGame en el Context, realiza el DELETE directo a Render
+    
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`https://copiapo-games-backend.onrender.com/api/games/${id}`, {
@@ -80,7 +78,7 @@ export default function Profile() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen text-slate-100">
-      {/* Cabecera del Perfil */}
+      
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 shadow-xl mt-4">
         <div className="bg-blue-600 h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner uppercase">
           {user.email ? user.email.charAt(0) : 'U'}
@@ -103,7 +101,7 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Mensaje Informativo */}
+      
       <div className="bg-blue-950/40 border border-blue-900 rounded-xl p-5 mb-8 text-sm text-blue-300 flex items-start gap-3 shadow-md">
         <span className="text-lg mt-0.5">ℹ️</span>
         <p className="leading-relaxed">
@@ -114,7 +112,7 @@ export default function Profile() {
         </p>
       </div>
 
-      {/* Tabla de juegos */}
+      
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
           📦 {isAdmin ? 'Todas las Publicaciones de la Plataforma' : 'Mis Productos en Venta'}

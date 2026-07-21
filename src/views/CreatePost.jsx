@@ -12,7 +12,7 @@ export default function CreatePost() {
   const [consola, setConsola] = useState('');
   const [stock, setStock] = useState('1'); 
   
-  // Estados para datos de contacto
+ 
   const [nombreContacto, setNombreContacto] = useState('');
   const [facebook, setFacebook] = useState('');
   const [instagram, setInstagram] = useState('');
@@ -29,11 +29,11 @@ export default function CreatePost() {
         return;
       }
 
-      // 🎯 OBTENER EMAIL Y ROL DEL USUARIO LOGUEADO:
+      
       const userEmail = user?.email || localStorage.getItem('userEmail') || '';
       const isAdmin = user?.rol === 'admin' || user?.role === 'admin' || userEmail === 'manuel.achu.aracena@gmail.com';
 
-      // 🎯 GUARDA 'usuario administrador' SI ES ADMIN PARA PRESERVAR COMPATIBILIDAD CON BACKEND/CARRITO
+      
       const cargadoPorFinal = isAdmin ? 'usuario administrador' : 'usuario';
 
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {
@@ -75,7 +75,7 @@ export default function CreatePost() {
     <div className="min-h-screen bg-slate-950 p-6 flex justify-center items-center text-white">
       <div className="w-full max-w-5xl grid md:grid-cols-3 gap-6">
         
-        {/* Panel lateral con instrucciones */}
+        
         <div className="md:col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-lg shadow-xl h-fit">
           <h3 className="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">
             💡 ¿Cómo vender tu juego?
@@ -93,7 +93,7 @@ export default function CreatePost() {
           </ul>
         </div>
 
-        {/* Formulario principal */}
+        
         <div className="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-lg shadow-xl">
           <h2 className="text-2xl font-bold text-blue-500 text-center mb-6">🎮 Publicar un Juego para Vender</h2>
           
@@ -140,7 +140,7 @@ export default function CreatePost() {
               <input type="text" className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white focus:border-blue-500 outline-none" value={imagen} onChange={(e) => setImagen(e.target.value)} required />
             </div>
 
-            {/* Información de contacto */}
+            
             <div className="border-t border-slate-800 pt-4 mt-2">
               <h3 className="text-md font-bold text-amber-400 mb-3">👤 Información de Contacto para el Comprador</h3>
               

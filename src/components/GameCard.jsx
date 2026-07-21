@@ -12,25 +12,25 @@ export default function GameCard({ game }) {
   const precio = Number(game.price || game.precio || 0);
   const stockReal = game.stock ?? 0;
   
-  // 🎯 EVALUACIÓN DE SI ES ADMIN (Flexible ante correos o valores antiguos)
+  
   const rawCreador = String(game.cargado_por || '').toLowerCase();
   const esAdmin = rawCreador.includes('admin');
 
-  // 🎯 ETIQUETA HOMOLOGADA PARA MOSTRAR
+  
   const etiquetaSubido = esAdmin ? 'Subido: Administrador' : 'Subido: Usuario';
 
-  // 🎯 MANEJADOR PARA AGREGAR AL CARRITO O REDIRIGIR A LOGIN
+  
   const handleAddToCart = () => {
     const token = localStorage.getItem('token');
 
-    // Si no está autenticado (no hay token ni usuario en contexto)
+    
     if (!token && !user) {
       alert('Debes iniciar sesión para añadir productos al carrito.');
       navigate('/login');
       return;
     }
 
-    // Si la sesión existe, procede a añadir el juego
+   
     addToCart(game);
   };
 
@@ -41,7 +41,7 @@ export default function GameCard({ game }) {
       <div className="p-4 flex flex-col flex-grow justify-between gap-3">
         <div>
           
-          {/* Badge que dice "Subido: Administrador" o "Subido: Usuario" */}
+          
           <div className="mb-2.5 flex">
             <span className={`px-2 py-0.5 text-[9px] rounded font-bold uppercase tracking-wider border ${
               esAdmin
@@ -67,7 +67,7 @@ export default function GameCard({ game }) {
           </p>
         </div>
         
-        {/* BOTONES: Si es admin activa el botón de Añadir al Carrito */}
+        
         <div className={esAdmin ? "grid grid-cols-2 gap-2 pt-2" : "pt-2"}>
           <Link 
             to={`/game/${game.id}`} 

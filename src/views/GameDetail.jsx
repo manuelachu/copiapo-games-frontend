@@ -8,7 +8,7 @@ export default function GameDetail() {
   const { games, setGames, addToCart, user } = useContext(GameContext);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  // Buscar el juego por ID (asegurando coincidencia por string/number)
+  
   const game = games ? games.find((g) => String(g.id || g.id_juego) === String(id)) : null;
 
   if (!game) {
@@ -25,7 +25,7 @@ export default function GameDetail() {
     );
   }
 
-  // Mapeo de datos
+  
   const titulo = game.title || game.titulo || "Videojuego sin título";
   const imagen = game.image || game.imagen || "https://via.placeholder.com/300";
   const categoria = game.category || game.consola || "General";
@@ -33,7 +33,7 @@ export default function GameDetail() {
   const precio = Number(game.price || game.precio || 0);
   const stockReal = game.stock ?? 0;
 
-  // Verificación exacta usando 'cargado_por'
+  
   const creador = (game.cargado_por || "usuario").toLowerCase();
   const esAdmin = creador === 'usuario administrador';
 
@@ -41,7 +41,7 @@ export default function GameDetail() {
   const gameOwnerId = game.usuario_id || game.userId || game.usuarioId;
   const isOwner = !esAdmin && currentUserId && String(gameOwnerId) === String(currentUserId);
 
-  // Acción de agregar al carrito (Juegos de Administrador)
+  
   const handleAddToCart = () => {
     if (!user) {
       navigate('/login');
@@ -55,7 +55,7 @@ export default function GameDetail() {
     }
   };
 
-  // Función para borrar si el dueño lo vendió
+  
   const handleMarkAsSold = async () => {
     const confirmar = window.confirm("¿Confirmas que vendiste este juego? Se eliminará del catálogo permanentemente.");
     if (!confirmar) return;
@@ -106,7 +106,7 @@ export default function GameDetail() {
               Stock: {stockReal} u.
             </span>
 
-            {/* Badge de Vendedor corregido */}
+            
             <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 ${
               esAdmin ? 'text-red-400 bg-red-950/80 border border-red-800/50' : 'text-amber-400 bg-amber-950/80 border border-amber-800/50'
             }`}>
@@ -119,7 +119,7 @@ export default function GameDetail() {
           <p className="text-3xl text-emerald-400 font-bold mb-4">${precio.toLocaleString('es-CL')}</p>
           <p className="text-slate-400 leading-relaxed mb-6">{descripcion}</p>
           
-          {/* SI ES ADMINISTRADOR -> MOSTRAR BOTÓN DE AÑADIR AL CARRITO */}
+          
           {esAdmin ? (
             <button 
               onClick={handleAddToCart}
@@ -144,7 +144,7 @@ export default function GameDetail() {
               }
             </button>
           ) : (
-            /* SI ES USUARIO COMUNIDAD -> MOSTRAR DATOS DE CONTACTO Y REDES SOCIALES */
+           
             <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-3">
               <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">👤 Datos de Contacto Directo:</h3>
               <p className="text-sm">Nombre: <span className="text-white font-medium">{game.nombre_contacto || 'Usuario Registrado'}</span></p>

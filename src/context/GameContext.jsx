@@ -6,7 +6,7 @@ export const GameProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [games, setGames] = useState([]);
   const [cart, setCart] = useState([]);
-  // Clave para que tu Home los muestre de entrada:
+  
   const [filter, setFilter] = useState('all');
 
   const fetchGames = async () => {
@@ -37,7 +37,7 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
-  // Funciones del Carrito
+ 
   const addToCart = (product) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => String(item.id || item.id_juego) === String(product.id || product.id_juego));

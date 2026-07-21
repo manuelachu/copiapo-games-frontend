@@ -4,12 +4,12 @@ import { GameContext } from '../context/GameContext';
 import GameCard from '../components/GameCard';
 
 export default function Home() {
-  // Extraemos filter y setFilter directamente del contexto global
+ 
   const { games, filter, setFilter } = useContext(GameContext);
   const [visibleGames, setVisibleGames] = useState([]);
   const [animate, setAnimate] = useState(false);
 
-  // Filtrar los videojuegos asegurando que 'filter' exista con un respaldo seguro
+  
   const currentFilter = filter || 'all';
 
   const filteredGames = currentFilter === 'all' 
@@ -19,13 +19,13 @@ export default function Home() {
         return categoriaJuego === currentFilter.toLowerCase();
       });
 
-  // Manejar el efecto de animación al cambiar de filtro (desde arriba o desde el Footer)
+  
   useEffect(() => {
     setAnimate(false);
     const timer = setTimeout(() => {
       setVisibleGames(filteredGames);
       setAnimate(true);
-    }, 150); // Pequeña pausa para reiniciar el estado de la animación
+    }, 150); 
 
     return () => clearTimeout(timer);
   }, [filter, games]);
@@ -33,10 +33,10 @@ export default function Home() {
   return (
     <div className="p-8 max-w-7xl mx-auto">
       
-      {/* 🎯 BANNER INFORMATIVO / MENSAJE PRINCIPAL */}
+      
       <div className="bg-gradient-to-r from-slate-900 via-blue-950/40 to-slate-900 border border-slate-800 rounded-xl p-6 md:p-8 mb-8 shadow-2xl relative overflow-hidden">
         
-        {/* Glow de fondo opcional */}
+        
         <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="max-w-3xl relative z-10">
@@ -67,17 +67,17 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Encabezado Principal y Filtros */}
+      
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-white">Catálogo de Videojuegos</h2>
-          {/* Texto actualizado para el Trabajo Final */}
+          
           <p className="text-sm text-blue-400 font-medium mt-1">
             Trabajo Final - Copiapó Games Store
           </p>
         </div>
 
-        {/* Botones de Categorías */}
+        
         <div className="flex flex-wrap justify-center gap-3 bg-slate-900 p-1.5 rounded-lg border border-slate-800">
           {['all', 'playstation', 'xbox', 'nintendo'].map((cat) => (
             <button
@@ -95,7 +95,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Grilla del catálogo con contenedor animado */}
+      
       <div 
         className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 transition-all duration-300 ease-in-out ${
           animate ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'

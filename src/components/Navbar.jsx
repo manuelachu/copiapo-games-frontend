@@ -13,12 +13,12 @@ export default function Navbar() {
 
   return (
     <nav className="bg-slate-900 border-b border-slate-800 px-4 md:px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-white">
-      {/* Título de la tienda */}
+      
       <Link to="/" className="text-xl font-bold tracking-wider text-blue-500 hover:text-blue-400 whitespace-nowrap">
         🕹️ Copiapó Games Store
       </Link>
       
-      {/* Contenedor de Enlaces y Botones Responsivo */}
+      
       <div className="flex flex-wrap gap-3 sm:gap-6 items-center justify-center">
         <Link to="/" className="hover:text-blue-400 transition-colors text-sm md:text-base">
           Catálogo
@@ -30,13 +30,13 @@ export default function Navbar() {
               Vender Juego
             </Link>
             
-            {/* Texto de Perfil: Muestra "Mi Perfil" en celulares y añade el email solo en pantallas grandes */}
+           
             <Link to="/perfil" className="hover:text-blue-400 transition-colors text-sm md:text-base whitespace-nowrap">
               <span>Mi Perfil</span>
               <span className="hidden md:inline text-slate-400 text-xs ml-1">({user.email})</span>
             </Link>
             
-            {/* Carrito de Compras */}
+            
             <Link 
               to="/carrito" 
               className="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-full text-sm text-emerald-400 font-bold transition-colors flex items-center gap-1"
@@ -44,7 +44,7 @@ export default function Navbar() {
               🛒 {totalItems}
             </Link>
 
-            {/* Botón Cerrar Sesión */}
+            
             <button
               onClick={handleLogout}
               className="bg-red-600 hover:bg-red-500 px-3 py-1.5 md:px-4 rounded font-semibold text-xs md:text-sm transition-colors whitespace-nowrap"

@@ -28,7 +28,7 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Categorías interactivas */}
+        
         <div className="flex gap-6 text-sm items-center">
           <span className="text-xs font-semibold uppercase text-slate-500 tracking-wider block mb-1 md:hidden">
             Categorías
