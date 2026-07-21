@@ -6,9 +6,9 @@ export const GameProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [games, setGames] = useState([]);
   const [cart, setCart] = useState([]);
-  const [filter, setFilter] = useState('Todos');
+  // Importante: Inicializar en 'todos' en minúscula
+  const [filter, setFilter] = useState('todos');
 
-  // Cargar juegos desde la API backend
   const fetchGames = async () => {
     try {
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games');
@@ -24,7 +24,6 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     fetchGames();
 
-    // Recuperar datos de sesión si existen en localStorage
     const savedEmail = localStorage.getItem('userEmail');
     const savedRol = localStorage.getItem('rol');
     const savedUserId = localStorage.getItem('userId');
@@ -38,7 +37,6 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
-  // 🛒 FUNCIONES DEL CARRITO DE COMPRAS
   const addToCart = (product) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => String(item.id) === String(product.id));
@@ -67,19 +65,11 @@ export const GameProvider = ({ children }) => {
     setCart((prevCart) => prevCart.filter((item) => String(item.id) !== String(id)));
   };
 
-  const clearCart = () => {
-    setCart([]);
-  };
+  const clearCart = () => setCart([]);
 
-  // Cálculos dinámicos del Carrito
-  const totalAmount = cart.reduce((acc, item) => {
-    const precio = Number(item.price || item.precio || 0);
-    return acc + precio * item.quantity;
-  }, 0);
-
+  const totalAmount = cart.reduce((acc, item) => acc + Number(item.price || item.precio || 0) * item.quantity, 0);
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  // 🔑 Función de LOGIN
   const login = async (email, password) => {
     try {
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/auth/login', {
@@ -112,47 +102,12 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // 🚪 Función de LOGOUT
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('rol');
     localStorage.removeItem('userId');
     setUser(null);
-  };
-
-  // 🗑️ Eliminar Juego del Backend
-  const deleteGame = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Debes iniciar sesión para realizar esta acción.');
-        return false;
-      }
-
-      const url = `https://copiapo-games-backend.onrender.com/api/games/${id}`;
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        setGames((prevGames) => prevGames.filter((game) => Number(game.id || game.id_juego) !== Number(id)));
-        return true;
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Respuesta de error del backend:', response.status, errorData);
-        alert(`Error al eliminar: Error del servidor (Código ${response.status})`);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error en la petición de borrado:', error);
-      alert('Error de conexión al servidor al intentar eliminar.');
-      return false;
-    }
   };
 
   return (
@@ -174,7 +129,6 @@ export const GameProvider = ({ children }) => {
         login,
         logout,
         logoutUser: logout,
-        deleteGame,
         fetchGames
       }}
     >

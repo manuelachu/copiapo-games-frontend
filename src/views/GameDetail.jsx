@@ -1,29 +1,41 @@
-import { useParams, useNavigate } from 'react';
-import { useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { GameContext } from '../context/GameContext';
 
 export default function GameDetail() {
   const { id } = useParams();
-  const { games, setGames, addToCart, user } = useContext(GameContext);
   const navigate = useNavigate();
+  const { games, setGames, addToCart, user } = useContext(GameContext);
 
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const game = games.find(g => String(g.id) === String(id));
+  // Buscar el juego por ID (asegurando comparación por String o Number)
+  const game = games ? games.find((g) => String(g.id || g.id_juego) === String(id)) : null;
 
   if (!game) {
-    return <p className="text-center text-white py-12">Videojuego no encontrado.</p>;
+    return (
+      <div className="p-8 max-w-4xl mx-auto min-h-[60vh] flex flex-col items-center justify-center text-white">
+        <p className="text-xl font-semibold mb-4 text-slate-300">Videojuego no encontrado o cargando...</p>
+        <button 
+          onClick={() => navigate('/')} 
+          className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+        >
+          Volver al catálogo
+        </button>
+      </div>
+    );
   }
 
+  // Mapeo seguro de propiedades
   const titulo = game.title || game.titulo || "Videojuego sin título";
-  const imagen = game.image || game.imagen || "https://via.placeholder.com/150";
-  const categoria = game.category || game.consola || "General";
+  const imagen = game.image || game.imagen || "https://via.placeholder.com/300";
+  const categoria = game.category || game.consola || game.categoria || "General";
   const descripcion = game.description || game.descripcion || "Disfruta de esta entrega oficial disponible en Copiapó Games Store.";
   const precio = Number(game.price || game.precio || 0);
   const stockReal = game.stock ?? 0; 
 
   const uploaderRole = game.role || game.user_role || game.cargado_por || 'admin';
-  const isCustomUser = uploaderRole.toLowerCase().includes('usuario sean usuarios') || uploaderRole.toLowerCase() === 'user';
+  const isCustomUser = uploaderRole.toLowerCase().includes('usuario') || uploaderRole.toLowerCase() === 'user';
 
   const currentUserId = user?.id || user?.usuario_id || user?.id_usuario;
   const gameOwnerId = game.usuario_id || game.userId || game.usuarioId;
@@ -46,7 +58,7 @@ export default function GameDetail() {
       if (response.ok) {
         alert("¡Felicitaciones por tu venta! El juego ha sido removido del catálogo.");
         if (setGames) {
-          setGames(games.filter(g => String(g.id) !== String(game.id)));
+          setGames(games.filter(g => String(g.id || g.id_juego) !== String(game.id)));
         }
         navigate('/');
       } else {
@@ -74,7 +86,10 @@ export default function GameDetail() {
   return (
     <div className="p-8 max-w-4xl mx-auto min-h-[70vh] text-white flex flex-col justify-center">
       
-      <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors duration-200 group font-medium text-sm w-fit">
+      <button 
+        onClick={() => navigate(-1)} 
+        className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors duration-200 group font-medium text-sm w-fit"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 transition-transform group-hover:-translate-x-1">
           <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
         </svg>
