@@ -36,7 +36,7 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
-  // 🔑 Función de LOGIN (la que te estaba faltando expuesta)
+  // 🔑 Función de LOGIN
   const login = async (email, password) => {
     try {
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/auth/login', {
@@ -71,7 +71,19 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  // Función para ELIMINAR un juego
+  // 🚪 Función de LOGOUT (Cerrar Sesión)
+  const logout = () => {
+    // Limpiamos la caché del navegador
+    localStorage.removeItem('token');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('rol');
+    localStorage.removeItem('userId');
+
+    // Limpiamos el estado del usuario
+    setUser(null);
+  };
+
+  // 🗑️ Función para ELIMINAR un juego
   const deleteGame = async (id) => {
     try {
       const token = localStorage.getItem('token');
@@ -93,7 +105,10 @@ export const GameProvider = ({ children }) => {
         return true;
       } else {
         const errorData = await response.json().catch(() => ({}));
-        alert(`Error al eliminar: ${errorData.message || errorData.error || 'No fue posible eliminar el juego.'}`);
+        console.error('Respuesta de error del backend:', response.status, errorData);
+        
+        const mensaje = errorData.message || errorData.error || errorData.mensaje || `Error del servidor (Código ${response.status})`;
+        alert(`Error al eliminar: ${mensaje}`);
         return false;
       }
     } catch (error) {
@@ -104,7 +119,17 @@ export const GameProvider = ({ children }) => {
   };
 
   return (
-    <GameContext.Provider value={{ user, setUser, games, setGames, login, deleteGame, fetchGames }}>
+    <GameContext.Provider value={{ 
+      user, 
+      setUser, 
+      games, 
+      setGames, 
+      login, 
+      logout, 
+      logoutUser: logout, // Alias por si tu Navbar/Header usa logoutUser en vez de logout
+      deleteGame, 
+      fetchGames 
+    }}>
       {children}
     </GameContext.Provider>
   );
