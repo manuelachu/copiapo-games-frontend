@@ -83,8 +83,7 @@ export const GameProvider = ({ children }) => {
     setUser(null);
   };
 
-  // 🗑️ Función para ELIMINAR un juego
-  const deleteGame = async (id) => {
+const deleteGame = async (id) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -92,7 +91,11 @@ export const GameProvider = ({ children }) => {
         return false;
       }
 
-      const response = await fetch(`https://copiapo-games-backend.onrender.com/api/games/${id}`, {
+      // 🔍 1. Verificamos en consola qué ID se está enviando y a qué URL
+      const url = `https://copiapo-games-backend.onrender.com/api/games/${id}`;
+      console.log(' Intentando eliminar en URL:', url, 'ID recibido:', id);
+
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -101,14 +104,29 @@ export const GameProvider = ({ children }) => {
       });
 
       if (response.ok) {
-        setGames(prevGames => prevGames.filter(game => Number(game.id) !== Number(id)));
+        setGames(prevGames => prevGames.filter(game => Number(game.id || game.id_juego) !== Number(id)));
         return true;
       } else {
+        // Si responde 404 con /api/games/${id}, intentamos la ruta sin /api por si el backend fue montado directo
+        if (response.status === 404) {
+          console.warn(' Probando ruta alternativa sin /api...');
+          const altResponse = await fetch(`https://copiapo-games-backend.onrender.com/games/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (altResponse.ok) {
+            setGames(prevGames => prevGames.filter(game => Number(game.id || game.id_juego) !== Number(id)));
+            return true;
+          }
+        }
+
         const errorData = await response.json().catch(() => ({}));
         console.error('Respuesta de error del backend:', response.status, errorData);
-        
-        const mensaje = errorData.message || errorData.error || errorData.mensaje || `Error del servidor (Código ${response.status})`;
-        alert(`Error al eliminar: ${mensaje}`);
+        alert(`Error al eliminar: Error del servidor (Código ${response.status})`);
         return false;
       }
     } catch (error) {

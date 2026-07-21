@@ -37,6 +37,11 @@ export default function Profile() {
 
   // Función para procesar el clic en Eliminar
   const handleDelete = async (id, titulo) => {
+    if (!id) {
+      alert("Error: No se encontró el ID del juego a eliminar.");
+      return;
+    }
+
     const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar "${titulo}"?`);
     
     if (confirmDelete) {
@@ -115,42 +120,47 @@ export default function Profile() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
-                {myGames.map((game) => (
-                  <tr key={game.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-4 px-4 flex items-center gap-3">
-                      <img 
-                        src={game.imagen || 'https://via.placeholder.com/50x60'} 
-                        alt={game.titulo} 
-                        className="w-10 h-12 object-cover rounded bg-slate-950 border border-slate-800"
-                      />
-                      <div>
-                        <p className="font-semibold text-white text-sm md:text-base">{game.titulo}</p>
-                        <p className="text-xs text-slate-500 sm:hidden capitalize">{game.consola}</p>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 hidden sm:table-cell">
-                      <span className="px-2 py-0.5 text-xs font-medium rounded capitalize bg-slate-800 text-slate-300 border border-slate-700">
-                        {game.consola}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-emerald-400 font-bold text-sm md:text-base">
-                      ${Number(game.precio).toLocaleString('es-CL')}
-                    </td>
-                    {isAdmin && (
-                      <td className="py-4 px-4 hidden md:table-cell text-xs text-slate-400 font-mono">
-                        User ID: {game.usuario_id}
+                {myGames.map((game) => {
+                  // Fallback para asegurarnos de capturar el ID sin importar cómo venga del backend
+                  const gameId = game.id || game.id_juego || game._id;
+
+                  return (
+                    <tr key={gameId || game.titulo} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="py-4 px-4 flex items-center gap-3">
+                        <img 
+                          src={game.imagen || 'https://via.placeholder.com/50x60'} 
+                          alt={game.titulo} 
+                          className="w-10 h-12 object-cover rounded bg-slate-950 border border-slate-800"
+                        />
+                        <div>
+                          <p className="font-semibold text-white text-sm md:text-base">{game.titulo}</p>
+                          <p className="text-xs text-slate-500 sm:hidden capitalize">{game.consola}</p>
+                        </div>
                       </td>
-                    )}
-                    <td className="py-4 px-4 text-right">
-                      <button
-                        onClick={() => handleDelete(game.id, game.titulo)}
-                        className="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded text-xs font-semibold transition-all duration-150 border border-red-500/30 hover:border-red-600 cursor-pointer"
-                      >
-                        🗑️ Eliminar
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="py-4 px-4 hidden sm:table-cell">
+                        <span className="px-2 py-0.5 text-xs font-medium rounded capitalize bg-slate-800 text-slate-300 border border-slate-700">
+                          {game.consola}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-emerald-400 font-bold text-sm md:text-base">
+                        ${Number(game.precio).toLocaleString('es-CL')}
+                      </td>
+                      {isAdmin && (
+                        <td className="py-4 px-4 hidden md:table-cell text-xs text-slate-400 font-mono">
+                          User ID: {game.usuario_id}
+                        </td>
+                      )}
+                      <td className="py-4 px-4 text-right">
+                        <button
+                          onClick={() => handleDelete(gameId, game.titulo)}
+                          className="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded text-xs font-semibold transition-all duration-150 border border-red-500/30 hover:border-red-600 cursor-pointer"
+                        >
+                          🗑️ Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
