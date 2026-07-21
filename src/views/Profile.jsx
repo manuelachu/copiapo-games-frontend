@@ -15,21 +15,21 @@ export default function Profile() {
   // Verificación de Administrador
   const isAdmin = user.rol === 'admin' || user.role === 'admin';
 
-  // FILTRADO DE JUEGOS:
-  // - Admin: Muestra TODOS los juegos de la tienda para gestionarlos/borrarlos.
-  // - User: Muestra los juegos que coincidan con usuario_id (ej: 2) o email.
+  // FILTRADO ESTRICTO DE JUEGOS:
+  // 1. Admin: Ve absolutamente TODOS los juegos para administrarlos/borrarlos.
+  // 2. User normal: Solo ve los juegos cuyo usuario_id coincida EXACTAMENTE con su ID de BD, 
+  //    o cuyo sellerEmail/email coincida exactamente con su correo.
   const myGames = games ? games.filter(game => {
-    if (isAdmin) return true; // El Administrador ve y puede borrar TODOS
+    if (isAdmin) return true;
 
-    // Coincidencia por ID de usuario en la BD (ej. usuario_id === 2)
+    // Coincidencia estricta por ID numérico de PostgreSQL
     const matchUserId = user.id && Number(game.usuario_id) === Number(user.id);
     
-    // Coincidencia secundaria si usuario_id en BD no estuviera ligado pero sí el correo/nombre
+    // Coincidencia estricta por Email exacto (si aplica)
     const matchEmail = 
-      game.sellerEmail === user.email || 
-      game.email === user.email || 
-      game.cargado_por?.toLowerCase().includes('sean usuarios') ||
-      game.cargado_por === user.email;
+      (game.sellerEmail && game.sellerEmail === user.email) || 
+      (game.email && game.email === user.email) ||
+      (game.cargado_por && game.cargado_por === user.email);
 
     return matchUserId || matchEmail;
   }) : [];
@@ -88,7 +88,7 @@ export default function Profile() {
 
         {myGames.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
-            <p className="text-slate-400 text-sm">Aún no hay juegos registrados para este perfil.</p>
+            <p className="text-slate-400 text-sm">Aún no has subido ningún videojuego a la tienda.</p>
             <p className="text-xs text-slate-500 mt-1">¡Utiliza la opción "Vender Juego" en el menú para publicar el primero!</p>
           </div>
         ) : (
