@@ -6,13 +6,13 @@ export const GameContext = createContext();
 const API_URL = 'https://copiapo-games-backend.onrender.com';
 
 export function GameProvider({ children }) {
-  // 1. Estado de Autenticación (con persistencia básica en localStorage)
+  // 1. Estado de Autenticación con persistencia en localStorage
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  // 2. Estado del Catálogo de Videojuegos (Inicia vacío y se llena desde PostgreSQL)
+  // 2. Estado del Catálogo de Videojuegos
   const [games, setGames] = useState([]);
 
   // 3. Estado del Carrito de Compras
@@ -21,11 +21,11 @@ export function GameProvider({ children }) {
   // 4. Estado del Filtro Global
   const [filter, setFilter] = useState('all');
 
-  // TRAER JUEGOS: Carga los videojuegos desde la BD al inicializar la página
+  // TRAER JUEGOS: Carga los videojuegos desde PostgreSQL
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/games`); // 👈 Corregido con /api/games
+        const response = await fetch(`${API_URL}/api/games`);
         if (response.ok) {
           const data = await response.json();
           setGames(data);
@@ -40,26 +40,36 @@ export function GameProvider({ children }) {
     fetchGames();
   }, []);
 
-  // INICIAR SESIÓN: Conectado al endpoint de autenticación del backend
+  // INICIAR SESIÓN: Petición HTTP centralizada
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, { // 👈 Corregido con /api/auth/login
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        // Guardamos el email y el token enviado por tu backend
-        const loggedUser = { email, token: data.token || 'fake-jwt-token' };
+        const loggedUser = { 
+          email: data.user?.email || email, 
+          token: data.token,
+          rol: data.user?.rol || 'usuario'
+        };
+        
         setUser(loggedUser);
         localStorage.setItem('user', JSON.stringify(loggedUser));
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('rol', loggedUser.rol);
+        
+        return { success: true };
       } else {
-        alert("Credenciales incorrectas");
+        return { success: false, message: data.error || data.message || "Credenciales incorrectas" };
       }
     } catch (error) {
       console.error("Error en el login:", error);
+      return { success: false, message: "Error al conectar con el servidor" };
     }
   };
 
@@ -67,6 +77,8 @@ export function GameProvider({ children }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('rol');
     setCart([]);
   };
 
@@ -83,7 +95,7 @@ export function GameProvider({ children }) {
     });
   };
 
-  // CREAR JUEGO: Guarda el nuevo juego en PostgreSQL a través del backend
+  // CREAR JUEGO
   const createPost = async (newGame) => {
     try {
       const gameData = {
@@ -91,7 +103,7 @@ export function GameProvider({ children }) {
         sellerEmail: user ? user.email : 'anonimo@copiapogames.cl'
       };
 
-      const response = await fetch(`${API_URL}/api/games`, { // 👈 Corregido con /api/games
+      const response = await fetch(`${API_URL}/api/games`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(gameData)
@@ -99,7 +111,6 @@ export function GameProvider({ children }) {
 
       if (response.ok) {
         const createdGame = await response.json();
-        // Agrega el juego retornado por la BD al estado para actualizar la UI
         setGames((prevGames) => [...prevGames, createdGame]);
       }
     } catch (error) {
@@ -107,10 +118,10 @@ export function GameProvider({ children }) {
     }
   };
 
-  // ELIMINAR JUEGO: Borra el juego usando el id
+  // ELIMINAR JUEGO
   const deleteGame = async (gameId) => {
     try {
-      const response = await fetch(`${API_URL}/api/games/${gameId}`, { // 👈 Corregido con /api/games/:id
+      const response = await fetch(`${API_URL}/api/games/${gameId}`, {
         method: 'DELETE'
       });
 
@@ -122,7 +133,7 @@ export function GameProvider({ children }) {
     }
   };
 
-  // Cálculo dinámico de totalItems para el Navbar
+  // Cálculo dinámico de ítems para el Navbar
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (

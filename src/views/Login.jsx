@@ -10,30 +10,15 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch('https://copiapo-games-backend.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+    
+    // Llamamos directamente a la función login del contexto
+    const result = await login(email, password);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('rol', data.user.rol || 'usuario'); 
-
-       
-        login({ email: data.user.email, token: data.token, rol: data.user.rol });
-        alert("¡Ingreso exitoso!");
-        navigate('/');
-      } else {
-        alert(`Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error en el inicio de sesión:", error);
-      alert("Error al conectar con el backend.");
+    if (result.success) {
+      alert("¡Ingreso exitoso!");
+      navigate('/');
+    } else {
+      alert(`Error: ${result.message}`);
     }
   };
 
