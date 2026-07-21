@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GameContext } from '../context/GameContext'; // 👈 Importamos el Context
 
 export default function CreatePost() {
+  const { user } = useContext(GameContext); // 👈 Traemos el usuario activo del contexto
+
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [precio, setPrecio] = useState('');
@@ -9,7 +12,7 @@ export default function CreatePost() {
   const [consola, setConsola] = useState('');
   const [stock, setStock] = useState('1'); 
   
-  // Nuevos estados para capturar los datos de contacto
+  // Estados para datos de contacto
   const [nombreContacto, setNombreContacto] = useState('');
   const [facebook, setFacebook] = useState('');
   const [instagram, setInstagram] = useState('');
@@ -20,14 +23,15 @@ export default function CreatePost() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token'); 
-      const userRol = localStorage.getItem('rol'); 
 
       if (!token) {
         alert('No se detectó el token en el navegador. Por favor, cierra sesión e inicia sesión de nuevo.');
         return;
       }
 
-      const cargado_por = userRol === 'admin' ? 'usuario administrador' : 'usuario sean usuarios';
+      // 🎯 OBTENER EL EMAIL REAL DEL USUARIO LOGUEADO:
+      // Primero intentamos desde Context, luego desde localStorage o decodificado
+      const userEmail = user?.email || localStorage.getItem('userEmail') || '';
 
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {
         method: 'POST',
@@ -42,7 +46,8 @@ export default function CreatePost() {
           imagen, 
           consola, 
           stock: parseInt(stock),
-          cargado_por,
+          cargado_por: userEmail,       // 👈 ¡Ahora envía el correo real! (ej: david@gmail.com)
+          sellerEmail: userEmail,      // 👈 También lo enviamos como respaldo
           nombre_contacto: nombreContacto,
           facebook,
           instagram
@@ -51,7 +56,7 @@ export default function CreatePost() {
 
       if (response.ok) {
         alert('¡Videojuego publicado exitosamente!');
-        navigate('/');
+        navigate('/perfil'); // Redirige directamente al perfil para ver la publicación
       } else {
         const errorData = await response.json().catch(() => ({}));
         const mensajeError = errorData.message || errorData.error || 'Rechazado por el servidor';

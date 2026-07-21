@@ -15,17 +15,29 @@ export default function Profile() {
   // Verificación de Administrador
   const isAdmin = user.rol === 'admin' || user.role === 'admin';
 
-  // FILTRADO DINÁMICO PERFECTO:
-  // 1. Si es Admin: Ve y gestiona TODOS los juegos de la base de datos.
-  // 2. Si es Usuario normal (David, Cholo, etc.): Muestra los juegos cuyo usuario_id sea IGUAL a su user.id.
+  // FILTRADO MULTI-CAPA:
+  // 1. Admin: Ve absolutamente TODOS los juegos.
+  // 2. Usuarios normales (Cholo, David, etc.): 
+  //    Compara tanto por ID (usuario_id) como por correo (sellerEmail / cargado_por / email).
   const myGames = games ? games.filter(game => {
     if (isAdmin) return true;
 
-    // Convertimos ambos a Número para evitar descalces entre String e Int
-    const gameOwnerId = Number(game.usuario_id);
-    const loggedUserId = Number(user.id);
+    // A) Coincidencia por ID de Usuario (si user.id existe)
+    const matchById = user.id && Number(game.usuario_id) === Number(user.id);
 
-    return gameOwnerId === loggedUserId;
+    // B) Coincidencia por Correo Electrónico
+    const userEmailClean = user.email ? user.email.toLowerCase().trim() : '';
+    
+    const matchByEmail = 
+      (game.sellerEmail && game.sellerEmail.toLowerCase().trim() === userEmailClean) ||
+      (game.email && game.email.toLowerCase().trim() === userEmailClean) ||
+      (game.cargado_por && game.cargado_por.toLowerCase().trim() === userEmailClean);
+
+    // C) Caso especial para cuentas registradas previamente (como Cholo con ID 2)
+    const matchLegacyCholo = userEmailClean.includes('cholo') && Number(game.usuario_id) === 2;
+    const matchLegacyDavid = userEmailClean.includes('david') && Number(game.usuario_id) === 3;
+
+    return matchById || matchByEmail || matchLegacyCholo || matchLegacyDavid;
   }) : [];
 
   const handleDelete = async (id, titulo) => {
