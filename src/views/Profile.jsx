@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { GameContext } from '../context/GameContext';
 
 export default function Profile() {
-  const { user, games, deleteGame } = useContext(GameContext);
+  const { user, games, setGames, deleteGame } = useContext(GameContext);
 
   if (!user) {
     return (
@@ -35,7 +35,7 @@ export default function Profile() {
     return matchById || matchByEmail || matchLegacyCholo || matchLegacyDavid;
   }) : [];
 
-  // Función para procesar el clic en Eliminar
+  // Función para procesar el clic en Eliminar sin romper el flujo
   const handleDelete = async (id, titulo) => {
     if (!id) {
       alert("Error: No se encontró el ID del juego a eliminar.");
@@ -43,17 +43,38 @@ export default function Profile() {
     }
 
     const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar "${titulo}"?`);
-    
-    if (confirmDelete) {
-      if (!deleteGame) {
-        alert("La función de eliminación no está vinculada correctamente.");
-        return;
-      }
+    if (!confirmDelete) return;
 
+    // Si la función deleteGame existe en el context, la ejecuta directamente
+    if (typeof deleteGame === 'function') {
       const success = await deleteGame(id);
       if (success) {
         alert(`¡El videojuego "${titulo}" ha sido eliminado exitosamente!`);
       }
+      return;
+    }
+
+    // Fallback: Si no existe deleteGame en el Context, realiza el DELETE directo a Render
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`https://copiapo-games-backend.onrender.com/api/games/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        alert(`¡El videojuego "${titulo}" ha sido eliminado exitosamente!`);
+        if (setGames && games) {
+          setGames(games.filter(g => String(g.id || g.id_juego || g._id) !== String(id)));
+        }
+      } else {
+        alert("No se pudo eliminar el juego en el servidor.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error de conexión al intentar eliminar el videojuego.");
     }
   };
 
@@ -121,38 +142,41 @@ export default function Profile() {
               </thead>
               <tbody className="divide-y divide-slate-800/50">
                 {myGames.map((game) => {
-                  // Fallback para asegurarnos de capturar el ID sin importar cómo venga del backend
                   const gameId = game.id || game.id_juego || game._id;
+                  const titulo = game.title || game.titulo || "Sin título";
+                  const imagen = game.image || game.imagen || "https://via.placeholder.com/50x60";
+                  const consola = game.category || game.consola || "General";
+                  const precio = Number(game.price || game.precio || 0);
 
                   return (
-                    <tr key={gameId || game.titulo} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={gameId || titulo} className="hover:bg-slate-800/30 transition-colors">
                       <td className="py-4 px-4 flex items-center gap-3">
                         <img 
-                          src={game.imagen || 'https://via.placeholder.com/50x60'} 
-                          alt={game.titulo} 
+                          src={imagen} 
+                          alt={titulo} 
                           className="w-10 h-12 object-cover rounded bg-slate-950 border border-slate-800"
                         />
                         <div>
-                          <p className="font-semibold text-white text-sm md:text-base">{game.titulo}</p>
-                          <p className="text-xs text-slate-500 sm:hidden capitalize">{game.consola}</p>
+                          <p className="font-semibold text-white text-sm md:text-base">{titulo}</p>
+                          <p className="text-xs text-slate-500 sm:hidden capitalize">{consola}</p>
                         </div>
                       </td>
                       <td className="py-4 px-4 hidden sm:table-cell">
                         <span className="px-2 py-0.5 text-xs font-medium rounded capitalize bg-slate-800 text-slate-300 border border-slate-700">
-                          {game.consola}
+                          {consola}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-emerald-400 font-bold text-sm md:text-base">
-                        ${Number(game.precio).toLocaleString('es-CL')}
+                        ${precio.toLocaleString('es-CL')}
                       </td>
                       {isAdmin && (
                         <td className="py-4 px-4 hidden md:table-cell text-xs text-slate-400 font-mono">
-                          User ID: {game.usuario_id}
+                          User ID: {game.usuario_id || 1}
                         </td>
                       )}
                       <td className="py-4 px-4 text-right">
                         <button
-                          onClick={() => handleDelete(gameId, game.titulo)}
+                          onClick={() => handleDelete(gameId, titulo)}
                           className="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded text-xs font-semibold transition-all duration-150 border border-red-500/30 hover:border-red-600 cursor-pointer"
                         >
                           🗑️ Eliminar

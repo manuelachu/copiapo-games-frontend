@@ -1,9 +1,9 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GameContext } from '../context/GameContext'; // 👈 Importamos el Context
+import { GameContext } from '../context/GameContext';
 
 export default function CreatePost() {
-  const { user } = useContext(GameContext); // 👈 Traemos el usuario activo del contexto
+  const { user } = useContext(GameContext);
 
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -29,9 +29,12 @@ export default function CreatePost() {
         return;
       }
 
-      // 🎯 OBTENER EL EMAIL REAL DEL USUARIO LOGUEADO:
-      // Primero intentamos desde Context, luego desde localStorage o decodificado
+      // 🎯 OBTENER EMAIL Y ROL DEL USUARIO LOGUEADO:
       const userEmail = user?.email || localStorage.getItem('userEmail') || '';
+      const isAdmin = user?.rol === 'admin' || user?.role === 'admin' || userEmail === 'manuel.achu.aracena@gmail.com';
+
+      // 🎯 SI ES ADMIN SE ENVÍA 'usuario administrador', SINO EL EMAIL/CONTACTO
+      const cargadoPorFinal = isAdmin ? 'usuario administrador' : (userEmail || nombreContacto || 'usuario');
 
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {
         method: 'POST',
@@ -46,8 +49,8 @@ export default function CreatePost() {
           imagen, 
           consola, 
           stock: parseInt(stock),
-          cargado_por: userEmail,       // 👈 ¡Ahora envía el correo real! (ej: david@gmail.com)
-          sellerEmail: userEmail,      // 👈 También lo enviamos como respaldo
+          cargado_por: cargadoPorFinal,
+          sellerEmail: userEmail,
           nombre_contacto: nombreContacto,
           facebook,
           instagram
@@ -56,7 +59,7 @@ export default function CreatePost() {
 
       if (response.ok) {
         alert('¡Videojuego publicado exitosamente!');
-        navigate('/perfil'); // Redirige directamente al perfil para ver la publicación
+        navigate('/perfil');
       } else {
         const errorData = await response.json().catch(() => ({}));
         const mensajeError = errorData.message || errorData.error || 'Rechazado por el servidor';
