@@ -8,7 +8,7 @@ export default function GameDetail() {
   const { games, setGames, addToCart, user } = useContext(GameContext);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  // Buscar el juego correspondiente por ID
+  // Buscar el juego por ID (asegurando coincidencia por string/number)
   const game = games ? games.find((g) => String(g.id || g.id_juego) === String(id)) : null;
 
   if (!game) {
@@ -25,23 +25,37 @@ export default function GameDetail() {
     );
   }
 
-  // Mapeo seguro de datos
+  // Mapeo de datos
   const titulo = game.title || game.titulo || "Videojuego sin título";
   const imagen = game.image || game.imagen || "https://via.placeholder.com/300";
-  const categoria = game.category || game.consola || game.categoria || "General";
+  const categoria = game.category || game.consola || "General";
   const descripcion = game.description || game.descripcion || "Disfruta de esta entrega disponible en Copiapó Games Store.";
   const precio = Number(game.price || game.precio || 0);
   const stockReal = game.stock ?? 0;
 
-  // Identificar el origen de la publicación (Usuario vs Admin/Oficial)
-  const uploaderRole = game.role || game.user_role || game.cargado_por || 'admin';
-  const isCustomUser = uploaderRole.toLowerCase().includes('usuario') || uploaderRole.toLowerCase() === 'user';
+  // Verificación exacta usando 'cargado_por'
+  const creador = (game.cargado_por || "usuario").toLowerCase();
+  const esAdmin = creador === 'usuario administrador';
 
   const currentUserId = user?.id || user?.usuario_id || user?.id_usuario;
   const gameOwnerId = game.usuario_id || game.userId || game.usuarioId;
-  const isOwner = isCustomUser && currentUserId && String(gameOwnerId) === String(currentUserId);
+  const isOwner = !esAdmin && currentUserId && String(gameOwnerId) === String(currentUserId);
 
-  // Función para borrar publicación cuando el dueño confirma la venta
+  // Acción de agregar al carrito (Juegos de Administrador)
+  const handleAddToCart = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    if (typeof addToCart === 'function') {
+      addToCart(game);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2000);
+    }
+  };
+
+  // Función para borrar si el dueño lo vendió
   const handleMarkAsSold = async () => {
     const confirmar = window.confirm("¿Confirmas que vendiste este juego? Se eliminará del catálogo permanentemente.");
     if (!confirmar) return;
@@ -56,31 +70,17 @@ export default function GameDetail() {
       });
 
       if (response.ok) {
-        alert("¡Felicitaciones por tu venta! El juego ha sido removido del catálogo.");
+        alert("¡Felicitaciones por tu venta! El juego ha sido removido.");
         if (setGames) {
           setGames(games.filter(g => String(g.id || g.id_juego) !== String(game.id || game.id_juego)));
         }
         navigate('/');
       } else {
-        alert("No se pudo eliminar el juego. Verifica tus permisos.");
+        alert("No se pudo eliminar el juego.");
       }
     } catch (error) {
       console.error(error);
       alert("Error al intentar eliminar la publicación.");
-    }
-  };
-
-  // Agregar al carrito (Solo para juegos oficiales)
-  const handlePurchase = () => {
-    if (!user) {
-      navigate('/login');
-    } else {
-      const juegoParaCarrito = { id: game.id || game.id_juego, title: titulo, price: precio, image: imagen, category: categoria, stock: stockReal };
-      if (typeof addToCart === 'function') {
-        addToCart(juegoParaCarrito);
-        setAddedToCart(true);
-        setTimeout(() => setAddedToCart(false), 2000);
-      }
     }
   };
 
@@ -99,14 +99,19 @@ export default function GameDetail() {
         
         <div>
           <div className="flex flex-wrap items-center gap-3 mb-3">
-            <span className="text-xs font-bold uppercase text-blue-400 bg-blue-950 px-3 py-1 rounded-full">{categoria}</span>
+            <span className="text-xs font-bold uppercase text-blue-400 bg-blue-950 px-3 py-1 rounded-full">
+              {categoria}
+            </span>
             <span className={`text-xs font-bold px-3 py-1 rounded-full ${stockReal > 0 ? 'text-emerald-400 bg-emerald-950' : 'text-red-400 bg-red-950'}`}>
               Stock: {stockReal} u.
             </span>
 
-            <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 ${isCustomUser ? 'text-amber-400 bg-amber-950' : 'text-purple-400 bg-purple-950'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isCustomUser ? 'bg-amber-400' : 'bg-purple-400'}`}></span>
-              Vendedor: {isCustomUser ? 'Usuario Comunidad' : 'Oficial Tienda'}
+            {/* Badge de Vendedor corregido */}
+            <span className={`text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 ${
+              esAdmin ? 'text-red-400 bg-red-950/80 border border-red-800/50' : 'text-amber-400 bg-amber-950/80 border border-amber-800/50'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${esAdmin ? 'bg-red-400' : 'bg-amber-400'}`}></span>
+              {esAdmin ? 'Usuario Administrador' : `Vendedor: ${game.nombre_contacto || 'Usuario Comunidad'}`}
             </span>
           </div>
           
@@ -114,8 +119,32 @@ export default function GameDetail() {
           <p className="text-3xl text-emerald-400 font-bold mb-4">${precio.toLocaleString('es-CL')}</p>
           <p className="text-slate-400 leading-relaxed mb-6">{descripcion}</p>
           
-          {/* SI ES PUBLICADO POR UN USUARIO -> MOSTRAR REDES SOCIALES Y CONTACTO (SIN CARRO) */}
-          {isCustomUser ? (
+          {/* SI ES ADMINISTRADOR -> MOSTRAR BOTÓN DE AÑADIR AL CARRITO */}
+          {esAdmin ? (
+            <button 
+              onClick={handleAddToCart}
+              disabled={(user && stockReal <= 0) || addedToCart}
+              className={`w-full md:w-auto font-bold px-8 py-3 rounded-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${
+                !user 
+                  ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                  : addedToCart 
+                    ? 'bg-emerald-600 text-white' 
+                    : stockReal > 0 
+                      ? 'bg-blue-600 hover:bg-blue-500 text-white' 
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+              }`}
+            >
+              {!user 
+                ? 'Inicia sesión para comprar' 
+                : addedToCart 
+                  ? '🛒 ¡Añadido al carrito!' 
+                  : stockReal > 0 
+                    ? '🛒 Añadir al Carrito' 
+                    : 'Agotado'
+              }
+            </button>
+          ) : (
+            /* SI ES USUARIO COMUNIDAD -> MOSTRAR DATOS DE CONTACTO Y REDES SOCIALES */
             <div className="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-3">
               <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">👤 Datos de Contacto Directo:</h3>
               <p className="text-sm">Nombre: <span className="text-white font-medium">{game.nombre_contacto || 'Usuario Registrado'}</span></p>
@@ -136,7 +165,7 @@ export default function GameDetail() {
               {isOwner ? (
                 <button 
                   onClick={handleMarkAsSold}
-                  className="w-full mt-4 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors shadow-lg active:scale-95 cursor-pointer"
+                  className="w-full mt-4 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors shadow-lg cursor-pointer"
                 >
                   🤝 ¡Ya lo vendí! (Borrar publicación)
                 </button>
@@ -146,30 +175,6 @@ export default function GameDetail() {
                 </p>
               )}
             </div>
-          ) : (
-            /* SI ES JUEGO OFICIAL DE LA TIENDA -> MOSTRAR CARRITO DE COMPRA */
-            <button 
-              onClick={handlePurchase}
-              disabled={(user && stockReal <= 0) || addedToCart}
-              className={`w-full md:w-auto font-bold px-8 py-3 rounded-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer ${
-                !user 
-                  ? 'bg-blue-600 hover:bg-blue-500 text-white' 
-                  : addedToCart 
-                    ? 'bg-teal-600 text-white border border-teal-500' 
-                    : stockReal > 0 
-                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white' 
-                      : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-              }`}
-            >
-              {!user 
-                ? 'Inicia sesión para comprar' 
-                : addedToCart 
-                  ? '¡Añadido al carrito de compras!' 
-                  : stockReal > 0 
-                    ? 'Añadir al Carrito' 
-                    : 'Agotado / Sin Stock'
-              }
-            </button>
           )}
 
         </div>
