@@ -12,25 +12,26 @@ export default function Profile() {
     );
   }
 
-  // Comprobar si es Administrador
+  // Verificación de Administrador
   const isAdmin = user.rol === 'admin' || user.role === 'admin';
 
-  // FILTRADO DINÁMICO MEJORADO:
-  // 1. Si es Admin: Ve TODOS los juegos de la tienda.
-  // 2. Si es User: Filtra por id, usuario_id o por correo electrónico.
+  // FILTRADO DE JUEGOS:
+  // - Admin: Muestra TODOS los juegos de la tienda para gestionarlos/borrarlos.
+  // - User: Muestra los juegos que coincidan con usuario_id (ej: 2) o email.
   const myGames = games ? games.filter(game => {
-    if (isAdmin) return true;
+    if (isAdmin) return true; // El Administrador ve y puede borrar TODOS
 
-    // Comparación por ID (si existe user.id)
-    const matchId = user.id && Number(game.usuario_id) === Number(user.id);
-
-    // Comparación por Correo o Nombre
+    // Coincidencia por ID de usuario en la BD (ej. usuario_id === 2)
+    const matchUserId = user.id && Number(game.usuario_id) === Number(user.id);
+    
+    // Coincidencia secundaria si usuario_id en BD no estuviera ligado pero sí el correo/nombre
     const matchEmail = 
       game.sellerEmail === user.email || 
       game.email === user.email || 
+      game.cargado_por?.toLowerCase().includes('sean usuarios') ||
       game.cargado_por === user.email;
 
-    return matchId || matchEmail;
+    return matchUserId || matchEmail;
   }) : [];
 
   const handleDelete = (id, titulo) => {
@@ -42,13 +43,15 @@ export default function Profile() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen text-slate-100">
-      {/* Cabecera del Perfil Dinámica */}
+      {/* Cabecera del Perfil */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 shadow-xl mt-4">
         <div className="bg-blue-600 h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner uppercase">
           {user.email ? user.email.charAt(0) : 'U'}
         </div>
         <div className="text-center sm:text-left">
-          <h1 className="text-2xl font-extrabold text-white">Panel de Mis Publicaciones</h1>
+          <h1 className="text-2xl font-extrabold text-white">
+            {isAdmin ? 'Panel de Control - Administrador' : 'Panel de Mis Publicaciones'}
+          </h1>
           <p className="text-sm text-slate-400 mt-0.5 flex items-center gap-2 justify-center sm:justify-start">
             Conectado como: 
             <span className="text-blue-400 font-mono text-xs bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
@@ -56,7 +59,7 @@ export default function Profile() {
             </span>
             {isAdmin && (
               <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs px-2 py-0.5 rounded font-bold uppercase">
-                Administrador
+                Admin
               </span>
             )}
           </p>
@@ -68,16 +71,16 @@ export default function Profile() {
         <span className="text-lg mt-0.5">ℹ️</span>
         <p className="leading-relaxed">
           {isAdmin 
-            ? "Como administrador puedes visualizar y gestionar todas las publicaciones registradas en la tienda."
+            ? "Como administrador tienes acceso total para visualizar y eliminar cualquier publicación registrada en la plataforma (de usuarios y administradores)."
             : "En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla, teniendo la opción de borrarlos una vez que se hayan vendido."
           }
         </p>
       </div>
 
-      {/* Tabla de juegos cargados */}
+      {/* Tabla de juegos */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          📦 {isAdmin ? 'Todos los Productos en Venta' : 'Mis Productos en Venta'}
+          📦 {isAdmin ? 'Todas las Publicaciones de la Plataforma' : 'Mis Productos en Venta'}
           <span className="bg-slate-800 text-xs px-2.5 py-1 rounded-full text-slate-400">
             {myGames.length}
           </span>
@@ -85,7 +88,7 @@ export default function Profile() {
 
         {myGames.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
-            <p className="text-slate-400 text-sm">Aún no has subido ningún videojuego a la tienda.</p>
+            <p className="text-slate-400 text-sm">Aún no hay juegos registrados para este perfil.</p>
             <p className="text-xs text-slate-500 mt-1">¡Utiliza la opción "Vender Juego" en el menú para publicar el primero!</p>
           </div>
         ) : (
@@ -96,6 +99,7 @@ export default function Profile() {
                   <th className="py-3 px-4">Videojuego</th>
                   <th className="py-3 px-4 hidden sm:table-cell">Consola</th>
                   <th className="py-3 px-4">Precio</th>
+                  {isAdmin && <th className="py-3 px-4 hidden md:table-cell">Publicado por</th>}
                   <th className="py-3 px-4 text-right">Acción</th>
                 </tr>
               </thead>
@@ -121,6 +125,11 @@ export default function Profile() {
                     <td className="py-4 px-4 text-emerald-400 font-bold text-sm md:text-base">
                       ${Number(game.precio).toLocaleString('es-CL')}
                     </td>
+                    {isAdmin && (
+                      <td className="py-4 px-4 hidden md:table-cell text-xs text-slate-400 font-mono">
+                        {game.cargado_por || `Usuario ID: ${game.usuario_id}`}
+                      </td>
+                    )}
                     <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => handleDelete(game.id, game.titulo)}

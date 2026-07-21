@@ -40,7 +40,7 @@ export function GameProvider({ children }) {
     fetchGames();
   }, []);
 
-  // INICIAR SESIÓN: Petición HTTP centralizada
+  // INICIAR SESIÓN: Guardamos también el ID numérico enviado por PostgreSQL
   const login = async (email, password) => {
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -53,9 +53,10 @@ export function GameProvider({ children }) {
 
       if (response.ok) {
         const loggedUser = { 
+          id: data.user?.id, // 👈 Capturamos el ID de la base de datos
           email: data.user?.email || email, 
           token: data.token,
-          rol: data.user?.rol || 'usuario'
+          rol: data.user?.rol || 'user'
         };
         
         setUser(loggedUser);
