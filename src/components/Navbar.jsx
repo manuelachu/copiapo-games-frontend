@@ -15,7 +15,7 @@ export default function Navbar() {
     <nav className="bg-slate-900 border-b border-slate-800 text-white px-6 py-4 sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         
-        {/* LOGO - Regresa al inicio y muestra todos los juegos */}
+        {/* LOGO - Redirige a Home y limpia el filtro a 'all' */}
         <button 
           onClick={handleGoHome} 
           className="flex items-center gap-2 text-xl font-extrabold text-blue-400 hover:text-blue-300 transition-colors focus:outline-none cursor-pointer"
@@ -23,8 +23,9 @@ export default function Navbar() {
           🎮 <span>Copiapó Games Store</span>
         </button>
 
-        {/* MENÚ */}
+        {/* MENÚ COMPLETO RESTAURADO */}
         <div className="flex items-center gap-6">
+          
           <button 
             onClick={handleGoHome} 
             className="text-slate-300 hover:text-white transition-colors text-sm font-medium cursor-pointer"
@@ -33,7 +34,25 @@ export default function Navbar() {
           </button>
 
           {user ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-5">
+              
+              {/* Opción Vender Juego */}
+              <Link 
+                to="/sell" 
+                className="text-slate-300 hover:text-emerald-400 transition-colors text-sm font-medium flex items-center gap-1"
+              >
+                ➕ <span>Vender Juego</span>
+              </Link>
+
+              {/* Opción Mi Perfil */}
+              <Link 
+                to="/profile" 
+                className="text-slate-300 hover:text-blue-400 transition-colors text-sm font-medium flex items-center gap-1"
+              >
+                👤 <span>Mi Perfil</span>
+              </Link>
+
+              {/* Carrito de Compras */}
               <Link to="/cart" className="relative text-slate-300 hover:text-white transition-colors">
                 🛒
                 {totalItems > 0 && (
@@ -42,7 +61,11 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-              <span className="text-xs text-slate-400 font-mono">{user.email}</span>
+
+              {/* Email de usuario */}
+              <span className="text-xs text-slate-400 font-mono hidden md:inline">{user.email}</span>
+
+              {/* Botón Cerrar Sesión */}
               <button 
                 onClick={logout} 
                 className="bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
@@ -60,6 +83,7 @@ export default function Navbar() {
               </Link>
             </div>
           )}
+
         </div>
 
       </div>
