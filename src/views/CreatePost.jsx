@@ -33,8 +33,8 @@ export default function CreatePost() {
       const userEmail = user?.email || localStorage.getItem('userEmail') || '';
       const isAdmin = user?.rol === 'admin' || user?.role === 'admin' || userEmail === 'manuel.achu.aracena@gmail.com';
 
-      // 🎯 SI ES ADMIN SE ENVÍA 'usuario administrador', SINO EL EMAIL/CONTACTO
-      const cargadoPorFinal = isAdmin ? 'usuario administrador' : (userEmail || nombreContacto || 'usuario');
+      // 🎯 GUARDA 'usuario administrador' SI ES ADMIN PARA PRESERVAR COMPATIBILIDAD CON BACKEND/CARRITO
+      const cargadoPorFinal = isAdmin ? 'usuario administrador' : 'usuario';
 
       const response = await fetch('https://copiapo-games-backend.onrender.com/api/games', {
         method: 'POST',
