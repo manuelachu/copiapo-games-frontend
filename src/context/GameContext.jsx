@@ -6,8 +6,8 @@ export const GameProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [games, setGames] = useState([]);
   const [cart, setCart] = useState([]);
-  // Importante: Inicializar en 'todos' en minúscula
-  const [filter, setFilter] = useState('todos');
+  // Clave para que tu Home los muestre de entrada:
+  const [filter, setFilter] = useState('all');
 
   const fetchGames = async () => {
     try {
@@ -37,12 +37,13 @@ export const GameProvider = ({ children }) => {
     }
   }, []);
 
+  // Funciones del Carrito
   const addToCart = (product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => String(item.id) === String(product.id));
+      const existingItem = prevCart.find((item) => String(item.id || item.id_juego) === String(product.id || product.id_juego));
       if (existingItem) {
         return prevCart.map((item) =>
-          String(item.id) === String(product.id)
+          String(item.id || item.id_juego) === String(product.id || product.id_juego)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -55,14 +56,14 @@ export const GameProvider = ({ children }) => {
     setCart((prevCart) =>
       prevCart
         .map((item) =>
-          String(item.id) === String(id) ? { ...item, quantity: item.quantity - 1 } : item
+          String(item.id || item.id_juego) === String(id) ? { ...item, quantity: item.quantity - 1 } : item
         )
         .filter((item) => item.quantity > 0)
     );
   };
 
   const deleteFromCart = (id) => {
-    setCart((prevCart) => prevCart.filter((item) => String(item.id) !== String(id)));
+    setCart((prevCart) => prevCart.filter((item) => String(item.id || item.id_juego) !== String(id)));
   };
 
   const clearCart = () => setCart([]);
