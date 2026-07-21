@@ -12,23 +12,20 @@ export default function Profile() {
     );
   }
 
+  // Verificación de Administrador
   const isAdmin = user.rol === 'admin' || user.role === 'admin';
 
-  // FILTRADO SEGURO
+  // FILTRADO DINÁMICO PERFECTO:
+  // 1. Si es Admin: Ve y gestiona TODOS los juegos de la base de datos.
+  // 2. Si es Usuario normal (David, Cholo, etc.): Muestra los juegos cuyo usuario_id sea IGUAL a su user.id.
   const myGames = games ? games.filter(game => {
-    if (isAdmin) return true; // El admin ve todo
+    if (isAdmin) return true;
 
-    // Si coincide el ID de usuario (Convertido a Number)
-    const matchUserId = user.id && Number(game.usuario_id) === Number(user.id);
+    // Convertimos ambos a Número para evitar descalces entre String e Int
+    const gameOwnerId = Number(game.usuario_id);
+    const loggedUserId = Number(user.id);
 
-    // Si coincide por Email o texto del creador
-    const matchEmail = 
-      (game.sellerEmail && game.sellerEmail.toLowerCase() === user.email.toLowerCase()) ||
-      (game.email && game.email.toLowerCase() === user.email.toLowerCase()) ||
-      (game.cargado_por && game.cargado_por.toLowerCase() === user.email.toLowerCase()) ||
-      (user.email.includes('cholo') && (Number(game.usuario_id) === 2 || game.cargado_por?.includes('sean usuarios')));
-
-    return matchUserId || matchEmail;
+    return gameOwnerId === loggedUserId;
   }) : [];
 
   const handleDelete = async (id, titulo) => {
@@ -40,7 +37,7 @@ export default function Profile() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto min-h-screen text-slate-100">
-      {/* Cabecera */}
+      {/* Cabecera del Perfil */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 shadow-xl mt-4">
         <div className="bg-blue-600 h-16 w-16 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-inner uppercase">
           {user.email ? user.email.charAt(0) : 'U'}
@@ -68,7 +65,7 @@ export default function Profile() {
         <span className="text-lg mt-0.5">ℹ️</span>
         <p className="leading-relaxed">
           {isAdmin 
-            ? "Como administrador puedes ver y borrar cualquier publicación registrada en la plataforma."
+            ? "Como administrador puedes visualizar y eliminar cualquier publicación registrada en la plataforma."
             : "En esta página podrás visualizar los juegos que has subido a la plataforma y administrarlos de manera sencilla."
           }
         </p>
@@ -86,7 +83,7 @@ export default function Profile() {
         {myGames.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
             <p className="text-slate-400 text-sm">Aún no tienes publicaciones visibles.</p>
-            <p className="text-xs text-slate-500 mt-1">¡Asegúrate de haber iniciado sesión de nuevo si creaste tu cuenta recientemente!</p>
+            <p className="text-xs text-slate-500 mt-1">¡Utiliza la opción "Vender Juego" en el menú para publicar el primero!</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -96,7 +93,7 @@ export default function Profile() {
                   <th className="py-3 px-4">Videojuego</th>
                   <th className="py-3 px-4 hidden sm:table-cell">Consola</th>
                   <th className="py-3 px-4">Precio</th>
-                  {isAdmin && <th className="py-3 px-4 hidden md:table-cell">Publicado por</th>}
+                  {isAdmin && <th className="py-3 px-4 hidden md:table-cell">ID Usuario Creador</th>}
                   <th className="py-3 px-4 text-right">Acción</th>
                 </tr>
               </thead>
@@ -124,7 +121,7 @@ export default function Profile() {
                     </td>
                     {isAdmin && (
                       <td className="py-4 px-4 hidden md:table-cell text-xs text-slate-400 font-mono">
-                        {game.cargado_por || `Usuario ID: ${game.usuario_id}`}
+                        User ID: {game.usuario_id}
                       </td>
                     )}
                     <td className="py-4 px-4 text-right">
