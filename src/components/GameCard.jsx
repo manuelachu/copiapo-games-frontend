@@ -11,7 +11,8 @@ export default function GameCard({ game }) {
   const precio = Number(game.price || game.precio || 0);
   const stockReal = game.stock ?? 0;
   
- const creador = game.cargado_por || "usuario";
+  const creador = (game.cargado_por || "usuario").toLowerCase();
+  const esAdmin = creador === 'usuario administrador';
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-lg hover:border-blue-500 transition-all flex flex-col h-full">
@@ -22,11 +23,11 @@ export default function GameCard({ game }) {
           
           <div className="mb-2.5 flex">
             <span className={`px-2 py-0.5 text-[9px] rounded font-bold uppercase tracking-wider border ${
-              creador === 'usuario administrador'
+              esAdmin
                 ? 'bg-red-500/10 text-red-400 border-red-500/30'
                 : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
             }`}>
-              {creador}
+              {game.cargado_por || "usuario"}
             </span>
           </div>
 
@@ -45,18 +46,26 @@ export default function GameCard({ game }) {
           </p>
         </div>
         
-        <div className="grid grid-cols-2 gap-2 pt-2">
-          <Link to={`/game/${game.id}`} className="text-center bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-1 rounded text-xs transition-colors flex items-center justify-center">
+        {/* BOTONES: Si es admin usa el grid de 2 columnas, de lo contrario sólo Ver Detalles a ancho completo */}
+        <div className={esAdmin ? "grid grid-cols-2 gap-2 pt-2" : "pt-2"}>
+          <Link 
+            to={`/game/${game.id}`} 
+            className="w-full text-center bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-1 rounded text-xs transition-colors flex items-center justify-center"
+          >
             Ver Detalles
           </Link>
           
-          <button 
-            onClick={() => addToCart(game)}
-            disabled={stockReal <= 0}
-            className={`font-bold py-2 px-1 rounded text-xs transition-colors truncate ${stockReal > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}
-          >
-            {stockReal > 0 ? '🛒 Añadir' : 'Agotado'}
-          </button>
+          {esAdmin && (
+            <button 
+              onClick={() => addToCart(game)}
+              disabled={stockReal <= 0}
+              className={`font-bold py-2 px-1 rounded text-xs transition-colors truncate cursor-pointer ${
+                stockReal > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+              }`}
+            >
+              {stockReal > 0 ? '🛒 Añadir' : 'Agotado'}
+            </button>
+          )}
         </div>
       </div>
     </div>
